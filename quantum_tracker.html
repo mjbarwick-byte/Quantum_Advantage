@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Global Quantum Technology Development</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+<style>
+  /* ── RESET & BASE ─────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #050d1a;
+    --panel:     #070f1f;
+    --border:    #0e3a5c;
+    --cyan:      #00d4ff;
+    --teal:      #00ffcc;
+    --purple:    #9b59ff;
+    --gold:      #f0c040;
+    --red:       #ff4444;
+    --text:      #a8d8ea;
+    --dim:       #4a7a9b;
+    --font-hud:  'Orbitron', sans-serif;
+    --font-mono: 'Share Tech Mono', monospace;
+  }
+
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font-mono); }
+
+  /* ── TOP BAR ──────────────────────────────────── */
+  #topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1200;
+    height: 56px;
+    background: linear-gradient(180deg, #08182f 0%, #050d1a 100%);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 16px; gap: 16px;
+    box-shadow: 0 0 24px rgba(0,212,255,0.08);
+  }
+
+  #logo-wrap {
+    height: 40px; width: 40px; flex-shrink: 0;
+    border: 1px solid var(--cyan);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 10px rgba(0,212,255,0.3);
+    overflow: hidden;
+  }
+  #logo-wrap img { height: 100%; width: 100%; object-fit: contain; }
+  #logo-wrap .logo-placeholder {
+    font-family: var(--font-hud); font-size: 9px; color: var(--cyan);
+    text-align: center; line-height: 1.2; padding: 2px;
+  }
+
+  #title-block { flex: 1; }
+  #title-block h1 {
+    font-family: var(--font-hud); font-size: 13px; font-weight: 800;
+    letter-spacing: 0.15em; color: #fff; text-transform: uppercase;
+  }
+  #title-block .sub {
+    font-size: 9px; letter-spacing: 0.12em; color: var(--dim);
+    text-transform: uppercase; margin-top: 2px;
+  }
+
+  #clocks {
+    display: flex; align-items: center; gap: 0;
+    font-family: var(--font-mono); font-size: 11px; color: var(--cyan);
+  }
+  .clock-block { text-align: right; padding: 0 12px; }
+  .clock-label { font-size: 8px; color: var(--dim); letter-spacing: 0.1em; display: block; }
+  .clock-divider { width: 1px; height: 28px; background: var(--border); }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 5px;
+    background: rgba(0,20,40,0.6); border: 1px solid var(--border);
+    border-radius: 3px; padding: 3px 8px;
+    font-size: 9px; letter-spacing: 0.08em; color: var(--dim);
+  }
+  .status-pill .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--teal);
+    box-shadow: 0 0 6px var(--teal);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* ── MAP ──────────────────────────────────────── */
+  #map {
+    position: fixed; top: 56px; left: 0; right: 0; bottom: 28px;
+    z-index: 1;
+  }
+
+  /* scanline overlay */
+  #map::after {
+    content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 3px,
+      rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px
+    );
+  }
+
+  /* ── CORNER BRACKETS ─────────────────────────── */
+  .bracket {
+    position: fixed; z-index: 1100; width: 20px; height: 20px;
+    border-color: var(--dim); border-style: solid; border-width: 0;
+  }
+  #br-tl { top: 62px; left: 6px;  border-top-width: 1px; border-left-width: 1px; }
+  #br-tr { top: 62px; right: 6px; border-top-width: 1px; border-right-width: 1px; }
+  #br-bl { bottom: 34px; left: 6px;  border-bottom-width: 1px; border-left-width: 1px; }
+  #br-br { bottom: 34px; right: 6px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  /* ── PANELS ───────────────────────────────────── */
+  .panel {
+    position: fixed; z-index: 1100;
+    background: rgba(5,13,26,0.92);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+    min-width: 180px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  }
+
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-hud); font-size: 9px; letter-spacing: 0.15em;
+    color: var(--cyan); text-transform: uppercase;
+    cursor: default;
+  }
+  .panel-toggle {
+    background: none; border: none; color: var(--cyan);
+    font-family: var(--font-mono); font-size: 14px; cursor: pointer;
+    line-height: 1; padding: 0 2px; transition: color .2s;
+  }
+  .panel-toggle:hover { color: #fff; }
+
+  .panel-body { overflow: hidden; transition: max-height .3s ease; }
+  .panel-body.collapsed { max-height: 0 !important; }
+
+  /* Map Layer panel */
+  #layer-panel { top: 68px; left: 14px; }
+  .layer-btn {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; background: none; border: none;
+    color: var(--dim); font-family: var(--font-mono); font-size: 11px;
+    padding: 7px 10px; cursor: pointer; transition: color .2s, background .2s;
+    text-align: left;
+  }
+  .layer-btn:hover { color: var(--text); background: rgba(0,212,255,0.05); }
+  .layer-btn.active { color: var(--cyan); }
+  .layer-btn .icon { font-size: 13px; }
+
+  /* Data Layers panel */
+  #data-panel {
+    top: 68px; right: 14px;
+    width: 280px;
+  }
+
+  .proxy-group { border-bottom: 1px solid rgba(14,58,92,0.5); }
+  .proxy-group:last-child { border-bottom: none; }
+
+  .proxy-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 10px;
+  }
+  .proxy-label {
+    font-size: 10px; color: var(--dim); letter-spacing: 0.06em;
+    text-transform: uppercase; flex: 1;
+  }
+  .proxy-value {
+    font-family: var(--font-hud); font-size: 11px; font-weight: 600;
+    text-align: right; min-width: 80px;
+  }
+  .proxy-value.loading { color: var(--dim); animation: blink 1s step-end infinite; }
+  .proxy-value.loaded  { color: var(--cyan); }
+  .proxy-value.error   { color: var(--red); font-size: 9px; }
+  .proxy-value.manual  { color: var(--gold); }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .proxy-source {
+    display: block; font-size: 8px; color: var(--dim);
+    letter-spacing: 0.05em; text-decoration: none;
+    padding: 0 10px 5px;
+    transition: color .2s;
+  }
+  .proxy-source:hover { color: var(--cyan); }
+
+  .proxy-section-head {
+    padding: 5px 10px 2px;
+    font-family: var(--font-hud); font-size: 8px; letter-spacing: 0.12em;
+    color: var(--purple); text-transform: uppercase; opacity: .8;
+  }
+
+  .refresh-btn {
+    display: block; width: 100%;
+    background: none; border: none; border-top: 1px solid var(--border);
+    color: var(--dim); font-family: var(--font-mono); font-size: 10px;
+    padding: 7px; cursor: pointer; letter-spacing: 0.08em;
+    transition: color .2s, background .2s;
+  }
+  .refresh-btn:hover { color: var(--cyan); background: rgba(0,212,255,0.05); }
+  .refresh-btn.spinning { color: var(--cyan); }
+
+  .last-updated {
+    padding: 4px 10px 6px;
+    font-size: 8px; color: var(--dim); letter-spacing: 0.05em;
+    border-top: 1px solid rgba(14,58,92,0.4);
+  }
+
+  /* ── COORDS DISPLAY ───────────────────────────── */
+  #coords {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    z-index: 1100;
+    font-size: 10px; color: var(--dim); letter-spacing: 0.08em;
+    pointer-events: none;
+  }
+
+  /* ── STATUS BAR ───────────────────────────────── */
+  #statusbar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 1200;
+    height: 28px; display: flex; align-items: center; padding: 0 14px; gap: 16px;
+    background: rgba(5,10,20,0.95); border-top: 1px solid var(--border);
+    font-size: 9px; letter-spacing: 0.08em; color: var(--dim);
+  }
+  .sb-item { display: flex; align-items: center; gap: 5px; }
+  .sb-dot { width: 5px; height: 5px; border-radius: 50%; }
+
+  /* node count badge */
+  .node-badge {
+    background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 2px; padding: 1px 5px;
+    font-family: var(--font-hud); font-size: 8px; color: var(--cyan);
+  }
+
+  /* ── LEAFLET POPUP OVERRIDES ─────────────────── */
+  .leaflet-popup-content-wrapper {
+    background: rgba(5,13,26,0.96) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 4px !important;
+    color: var(--text) !important;
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important;
+    box-shadow: 0 0 20px rgba(0,0,0,0.6) !important;
+  }
+  .leaflet-popup-tip { background: #0e3a5c !important; }
+  .leaflet-popup-content { margin: 10px 14px !important; line-height: 1.6 !important; }
+  .popup-title { font-family: var(--font-hud); font-size: 11px; color: var(--cyan); margin-bottom: 4px; }
+  .popup-cat { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ── TOP BAR ─────────────────────────────────────── -->
+<div id="topbar">
+  <div id="logo-wrap">
+    <img src="Logo.jpeg" alt="Team Logo"
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+    <div class="logo-placeholder" style="display:none;">QUANTUM<br>LEAP</div>
+  </div>
+
+  <div id="title-block">
+    <h1>Global Quantum Technology Development</h1>
+    <div class="sub">Strategic Intelligence Platform &nbsp;|&nbsp; USAWC Team Quantum Leap</div>
+  </div>
+
+  <div id="clocks">
+    <div class="clock-block">
+      <span class="clock-label">UTC</span>
+      <span id="utc-clock">--:--:--</span>
+    </div>
+    <div class="clock-divider"></div>
+    <div class="clock-block">
+      <span class="clock-label" id="local-tz">LOCAL</span>
+      <span id="local-clock">--:--:--</span>
+    </div>
+  </div>
+
+  <div class="status-pill"><span class="dot"></span>LIVE MAP</div>
+  <div class="status-pill"><span class="dot" style="background:var(--cyan);box-shadow:0 0 6px var(--cyan);"></span>
+    <span id="node-count">--</span>&nbsp;NODES ACTIVE
+  </div>
+</div>
+
+<!-- ── CORNER BRACKETS ────────────────────────────── -->
+<div class="bracket" id="br-tl"></div>
+<div class="bracket" id="br-tr"></div>
+<div class="bracket" id="br-bl"></div>
+<div class="bracket" id="br-br"></div>
+
+<!-- ── MAP ────────────────────────────────────────── -->
+<div id="map"></div>
+
+<!-- ── MAP LAYER PANEL ────────────────────────────── -->
+<div class="panel" id="layer-panel">
+  <div class="panel-header">
+    MAP LAYER
+    <button class="panel-toggle" id="layer-toggle">−</button>
+  </div>
+  <div class="panel-body" id="layer-body">
+    <button class="layer-btn active" data-layer="dark"><span class="icon">🌑</span> Dark</button>
+    <button class="layer-btn" data-layer="satellite"><span class="icon">🛰️</span> Satellite</button>
+    <button class="layer-btn" data-layer="street"><span class="icon">🗺️</span> Street View</button>
+    <button class="layer-btn" data-layer="terrain"><span class="icon">🏔️</span> Terrain</button>
+  </div>
+</div>
+
+<!-- ── DATA LAYERS PANEL ──────────────────────────── -->
+<div class="panel" id="data-panel">
+  <div class="panel-header">
+    DATA LAYERS
+    <button class="panel-toggle" id="data-toggle">−</button>
+  </div>
+  <div class="panel-body" id="data-body">
+
+    <!-- PUBLICATIONS -->
+    <div class="proxy-section-head">Publications (OpenAlex)</div>
+    <div class="proxy-group">
+      <div class="proxy-row">
+        <span class="proxy-label">Quantum Papers (Total)</span>
+        <span class="proxy-value loading" id="pub-total">LOADING…</span>
+      </div>
+      <a class="proxy-source" id="pub-total-src" href="https://openalex.org/works?search=quantum" target="_blank" rel="noopener">↗ openalex.org — all quantum works</a>
+
+      <div class="proxy-row">
+        <span class="proxy-label">Quantum Sensing</span>
+        <span class="proxy-value loading" id="pub-sensing">LOADING…</span>
+      </div>
+      <a class="proxy-source" id="pub-sensing-src" href="https://openalex.org/works?search=quantum+sensing" target="_blank" rel="noopener">↗ openalex.org — quantum sensing</a>
+
+      <div class="proxy-row">
+        <span class="proxy-label">Quantum Computing</span>
+        <span class="proxy-value loading" id="pub-computing">LOADING…</span>
+      </div>
+      <a class="proxy-source" href="https://openalex.org/works?search=quantum+computing" target="_blank" rel="noopener">↗ openalex.org — quantum computing</a>
+
+      <div class="proxy-row">
+        <span class="proxy-label">Quantum Comm.</span>
+        <span class="proxy-value loading" id="pub-comms">LOADING…</span>
+      </div>
+      <a class="proxy-source" href="https://openalex.org/works?search=quantum+communication" target="_blank" rel="noopener">↗ openalex.org — quantum communication</a>
+    </div>
+
+    <!-- PATENTS -->
+    <div class="proxy-section-head">Patents (PatentsView)</div>
+    <div class="proxy-group">
+      <div class="proxy-row">
+        <span class="proxy-label">Quantum Patents (US)</span>
+        <span class="proxy-value loading" id="pat-total">LOADING…</span>
+      </div>
+      <a class="proxy-source" href="https://patentsview.org/query#patents" target="_blank" rel="noopener">↗ patentsview.org — quantum</a>
+
+      <div class="proxy-row">
+        <span class="proxy-label">Granted (2020–Present)</span>
+        <span class="proxy-value loading" id="pat-recent">LOADING…</span>
+      </div>
+      <a class="proxy-source" href="https://search.patentsview.org/api/v1/patent/" target="_blank" rel="noopener">↗ search.patentsview.org API</a>
+    </div>
+
+    <!-- GOVT SPENDING -->
+    <div class="proxy-section-head">US Govt. Spending (USASpending)</div>
+    <div class="proxy-group">
+      <div class="proxy-row">
+        <span class="proxy-label">Total Quantum Awards</span>
+        <span class="proxy-value loading" id="spend-count">LOADING…</span>
+      </div>
+      <a class="proxy-source" href="https://www.usaspending.gov/search/?hash=3d5b62dbbb8c7c3ef25d83c6826dd1dc" target="_blank" rel="noopener">↗ usaspending.gov — quantum keyword</a>
+
+      <div class="proxy-row">
+        <span class="proxy-label">Total Obligated (USD)</span>
+        <span class="proxy-value loading" id="spend-total">LOADING…</span>
+      </div>
+      <a class="proxy-source" href="https://api.usaspending.gov" target="_blank" rel="noopener">↗ api.usaspending.gov v2</a>
+    </div>
+
+    <!-- MANUAL PROXIES (placeholders) -->
+    <div class="proxy-section-head">Manual Proxies (Curated)</div>
+    <div class="proxy-group">
+      <div class="proxy-row">
+        <span class="proxy-label">Graduate Programs</span>
+        <span class="proxy-value manual">— TBD</span>
+      </div>
+      <div class="proxy-row">
+        <span class="proxy-label">Known Prototypes</span>
+        <span class="proxy-value manual">— TBD</span>
+      </div>
+      <div class="proxy-row">
+        <span class="proxy-label">Private Companies</span>
+        <span class="proxy-value manual">— TBD</span>
+      </div>
+      <div class="proxy-row">
+        <span class="proxy-label">Startups (&lt;3 yrs)</span>
+        <span class="proxy-value manual">— TBD</span>
+      </div>
+    </div>
+
+    <div class="last-updated" id="last-updated">Last fetched: never</div>
+    <button class="refresh-btn" id="refresh-btn">⟳ REFRESH ALL DATA</button>
+  </div>
+</div>
+
+<!-- ── COORDS ─────────────────────────────────────── -->
+<div id="coords">LAT — &nbsp;|&nbsp; LNG —</div>
+
+<!-- ── STATUS BAR ─────────────────────────────────── -->
+<div id="statusbar">
+  <div class="sb-item">
+    <span class="sb-dot" style="background:var(--teal);box-shadow:0 0 4px var(--teal);"></span>
+    COMPUTING
+  </div>
+  <div class="sb-item">
+    <span class="sb-dot" style="background:var(--cyan);box-shadow:0 0 4px var(--cyan);"></span>
+    SENSING
+  </div>
+  <div class="sb-item">
+    <span class="sb-dot" style="background:var(--purple);box-shadow:0 0 4px var(--purple);"></span>
+    COMMUNICATIONS
+  </div>
+  <div class="sb-item">
+    <span class="sb-dot" style="background:var(--gold);box-shadow:0 0 4px var(--gold);"></span>
+    MULTI-DOMAIN
+  </div>
+  <div style="flex:1"></div>
+  <div class="sb-item">
+    <span class="node-badge" id="sb-node-count">12</span>
+    NODES
+  </div>
+  <div class="sb-item" style="color:var(--dim)">QUANTUM LEAP &nbsp;|&nbsp; USAWC AY26</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// NODE DATA
+// ══════════════════════════════════════════════════════════
+const NODES = [
+  { lat: 40.7128,  lng: -74.006,  name: "IBM Quantum — New York",          cat: "computing",  color: "#00ffcc" },
+  { lat: 37.4220,  lng: -122.084, name: "Google Quantum AI — Mountain View", cat: "computing", color: "#00ffcc" },
+  { lat: 35.6895,  lng: 139.692,  name: "Toshiba Quantum — Tokyo",          cat: "comms",      color: "#9b59ff" },
+  { lat: 51.5074,  lng: -0.1278,  name: "BT Quantum Comms — London",        cat: "comms",      color: "#9b59ff" },
+  { lat: 52.3676,  lng: 4.9041,   name: "QuTech — Delft",                   cat: "computing",  color: "#00ffcc" },
+  { lat: 39.9042,  lng: 116.407,  name: "CAS Quantum Lab — Beijing",        cat: "multi",      color: "#f0c040" },
+  { lat: 48.2082,  lng: 16.3738,  name: "AIT Quantum — Vienna",             cat: "comms",      color: "#9b59ff" },
+  { lat: 31.2304,  lng: 121.474,  name: "USTC Quantum — Shanghai",          cat: "multi",      color: "#f0c040" },
+  { lat: 43.6532,  lng: -79.383,  name: "IQC — Waterloo",                   cat: "computing",  color: "#00ffcc" },
+  { lat: 1.3521,   lng: 103.820,  name: "CQT — Singapore",                  cat: "sensing",    color: "#00d4ff" },
+  { lat: 33.8688,  lng: 151.209,  name: "ANU Quantum — Canberra",           cat: "sensing",    color: "#00d4ff" },
+  { lat: 55.7558,  lng: 37.6173,  name: "RQC — Moscow",                     cat: "computing",  color: "#00ffcc" },
+];
+
+// ══════════════════════════════════════════════════════════
+// MAP INIT
+// ══════════════════════════════════════════════════════════
+const map = L.map('map', { center: [20, 10], zoom: 3, zoomControl: false });
+
+const TILE_LAYERS = {
+  dark:      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© CartoDB', maxZoom: 19 }),
+  satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri', maxZoom: 19 }),
+  street:    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }),
+  terrain:   L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { attribution: '© OpenTopoMap', maxZoom: 17 }),
+};
+let currentLayer = TILE_LAYERS.dark.addTo(map);
+
+// Zoom control bottom-right
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+// Nodes
+NODES.forEach(node => {
+  const marker = L.circleMarker([node.lat, node.lng], {
+    radius: 7, color: node.color, fillColor: node.color,
+    fillOpacity: 0.25, weight: 2
+  }).addTo(map);
+  marker.bindPopup(`
+    <div class="popup-title">${node.name}</div>
+    <div class="popup-cat">${node.cat.toUpperCase()}</div>
+  `);
+});
+
+document.getElementById('node-count').textContent = NODES.length;
+document.getElementById('sb-node-count').textContent = NODES.length;
+
+// Coordinates display
+map.on('mousemove', e => {
+  document.getElementById('coords').textContent =
+    `LAT ${e.latlng.lat.toFixed(4)}  |  LNG ${e.latlng.lng.toFixed(4)}`;
+});
+
+// ══════════════════════════════════════════════════════════
+// MAP LAYER SWITCHER
+// ══════════════════════════════════════════════════════════
+document.querySelectorAll('.layer-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.layer;
+    map.removeLayer(currentLayer);
+    currentLayer = TILE_LAYERS[key].addTo(map);
+    document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+// PANEL COLLAPSE TOGGLES
+// ══════════════════════════════════════════════════════════
+function setupToggle(btnId, bodyId) {
+  const btn  = document.getElementById(btnId);
+  const body = document.getElementById(bodyId);
+  body.style.maxHeight = body.scrollHeight + 'px';
+  btn.addEventListener('click', () => {
+    const collapsed = body.classList.toggle('collapsed');
+    btn.textContent = collapsed ? '+' : '−';
+    if (!collapsed) body.style.maxHeight = body.scrollHeight + 'px';
+  });
+}
+setupToggle('layer-toggle', 'layer-body');
+setupToggle('data-toggle',  'data-body');
+
+// ══════════════════════════════════════════════════════════
+// CLOCKS
+// ══════════════════════════════════════════════════════════
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function getTimezone() {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const abbr = new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop();
+    document.getElementById('local-tz').textContent = abbr || tz;
+  } catch(e) {}
+}
+getTimezone();
+
+function tickClocks() {
+  const now = new Date();
+  const utc  = `${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
+  const loc  = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  document.getElementById('utc-clock').textContent   = utc;
+  document.getElementById('local-clock').textContent = loc;
+}
+tickClocks();
+setInterval(tickClocks, 1000);
+
+// ══════════════════════════════════════════════════════════
+// UTILITY
+// ══════════════════════════════════════════════════════════
+function fmtInt(n) {
+  if (n == null) return 'N/A';
+  return Number(n).toLocaleString('en-US');
+}
+function fmtUSD(n) {
+  if (n == null) return 'N/A';
+  const b = n / 1e9;
+  if (b >= 1) return '$' + b.toFixed(2) + 'B';
+  const m = n / 1e6;
+  if (m >= 1) return '$' + m.toFixed(1) + 'M';
+  return '$' + Number(n).toLocaleString();
+}
+
+function setVal(id, val, status = 'loaded') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = val;
+  el.className = 'proxy-value ' + status;
+}
+
+// ══════════════════════════════════════════════════════════
+// API 1: OpenAlex — fully open, explicit CORS, JSON
+// Replaces arXiv Atom/XML (which breaks on file:// origins)
+// Docs: https://docs.openalex.org/api-entities/works
+// ══════════════════════════════════════════════════════════
+async function fetchOpenAlex(query, elementId, srcId) {
+  // polite pool - add email param for faster responses
+  const url = `https://api.openalex.org/works?search=${encodeURIComponent(query)}&per-page=1&mailto=usawc@army.mil`;
+  try {
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const total = data?.meta?.count;
+    if (total != null) {
+      setVal(elementId, fmtInt(total));
+      if (srcId) {
+        const srcEl = document.getElementById(srcId);
+        if (srcEl) srcEl.href = `https://openalex.org/works?search=${encodeURIComponent(query)}`;
+      }
+    } else {
+      setVal(elementId, 'NO DATA', 'error');
+    }
+  } catch(e) {
+    setVal(elementId, 'ERR: ' + e.message.slice(0,15), 'error');
+    console.error('OpenAlex error for', query, e);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// API 2: PatentsView v1 — POST with JSON body
+// https://search.patentsview.org/api/v1/patent/
+// ══════════════════════════════════════════════════════════
+async function fetchPatentsView(query, elementId, dateFilter = null) {
+  const url = 'https://search.patentsview.org/api/v1/patent/';
+
+  let qObj = { "_text_any": { "patent_abstract": query } };
+  if (dateFilter) {
+    qObj = { "_and": [ qObj, { "_gte": { "patent_date": dateFilter } } ] };
+  }
+
+  const body = {
+    q: qObj,
+    f: ["patent_id", "patent_date"],
+    o: { size: 1, after: "" }
+  };
+
+  try {
+    const res = await fetch(url, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body:    JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const total = data?.total_hits;
+    if (total != null) {
+      setVal(elementId, fmtInt(total));
+    } else {
+      setVal(elementId, 'NO DATA', 'error');
+    }
+  } catch(e) {
+    setVal(elementId, 'ERR: ' + e.message.slice(0,15), 'error');
+    console.error('PatentsView error', e);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// API 3: USASpending.gov v2 — POST, CORS-enabled
+// https://api.usaspending.gov/api/v2/search/spending_by_award/
+// ══════════════════════════════════════════════════════════
+async function fetchUSASpending() {
+  const url = 'https://api.usaspending.gov/api/v2/search/spending_by_award/';
+  const body = {
+    filters: {
+      keywords: [
+        "quantum computing", "quantum sensing",
+        "quantum communication", "quantum technology",
+        "quantum information"
+      ],
+      award_type_codes: ["A","B","C","D","02","03","04","05"]
+    },
+    fields: ["Award ID", "Award Amount", "Awarding Agency Name"],
+    page: 1,
+    limit: 100,
+    sort: "Award Amount",
+    order: "desc",
+    subawards: false
+  };
+
+  try {
+    const res = await fetch(url, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body:    JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    const results = data?.results ?? [];
+    const meta    = data?.page_metadata ?? {};
+    const total   = meta.total ?? data?.total ?? results.length;
+
+    const pageSum = results.reduce((sum, r) => {
+      return sum + (parseFloat(r['Award Amount']) || 0);
+    }, 0);
+
+    setVal('spend-count', fmtInt(total));
+    setVal('spend-total', fmtUSD(pageSum) + (total > 100 ? '+' : ''));
+
+  } catch(e) {
+    setVal('spend-count', 'ERR: ' + e.message.slice(0,15), 'error');
+    setVal('spend-total', 'ERR: ' + e.message.slice(0,15), 'error');
+    console.error('USASpending error', e);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// FETCH ALL — orchestrator
+// ══════════════════════════════════════════════════════════
+async function fetchAll() {
+  const btn = document.getElementById('refresh-btn');
+  btn.textContent = '⟳ FETCHING…';
+  btn.classList.add('spinning');
+
+  ['pub-total','pub-sensing','pub-computing','pub-comms',
+   'pat-total','pat-recent','spend-count','spend-total'].forEach(id => {
+    setVal(id, 'LOADING…', 'loading');
+  });
+
+  await Promise.allSettled([
+    fetchOpenAlex('quantum',               'pub-total',     'pub-total-src'),
+    fetchOpenAlex('quantum sensing',       'pub-sensing',   'pub-sensing-src'),
+    fetchOpenAlex('quantum computing',     'pub-computing', null),
+    fetchOpenAlex('quantum communication', 'pub-comms',     null),
+    fetchPatentsView('quantum',            'pat-total'),
+    fetchPatentsView('quantum',            'pat-recent',    '2020-01-01'),
+    fetchUSASpending(),
+  ]);
+
+  const now = new Date();
+  document.getElementById('last-updated').textContent =
+    `Last fetched: ${now.toUTCString()}`;
+
+  const body = document.getElementById('data-body');
+  if (!body.classList.contains('collapsed')) {
+    body.style.maxHeight = body.scrollHeight + 'px';
+  }
+
+  btn.textContent = '⟳ REFRESH ALL DATA';
+  btn.classList.remove('spinning');
+}
+
+document.getElementById('refresh-btn').addEventListener('click', fetchAll);
+fetchAll();
+</script>
+</body>
+</html>
