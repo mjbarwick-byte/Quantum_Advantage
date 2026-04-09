@@ -171,7 +171,7 @@
     padding: 7px 10px;
   }
   .proxy-label {
-    font-size: 10px; color: var(--dim); letter-spacing: 0.06em;
+    font-size: 10px; color: #b8d4e8; letter-spacing: 0.06em;
     text-transform: uppercase; flex: 1;
   }
   .proxy-value {
@@ -186,7 +186,7 @@
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
   .proxy-source {
-    display: block; font-size: 8px; color: var(--dim);
+    display: block; font-size: 8px; color: #7ab8d4;
     letter-spacing: 0.05em; text-decoration: none;
     padding: 0 10px 5px;
     transition: color .2s;
@@ -196,7 +196,7 @@
   .proxy-section-head {
     padding: 5px 10px 2px;
     font-family: var(--font-hud); font-size: 8px; letter-spacing: 0.12em;
-    color: var(--purple); text-transform: uppercase; opacity: .8;
+    color: #b08fff; text-transform: uppercase;
   }
 
   .refresh-btn {
@@ -211,7 +211,7 @@
 
   .last-updated {
     padding: 4px 10px 6px;
-    font-size: 8px; color: var(--dim); letter-spacing: 0.05em;
+    font-size: 8px; color: #8ab4cc; letter-spacing: 0.05em;
     border-top: 1px solid rgba(14,58,92,0.4);
   }
 
@@ -353,11 +353,48 @@
       <a class="proxy-source" href="https://openalex.org/works?search=quantum+communication" target="_blank" rel="noopener">↗ openalex.org — quantum communication</a>
     </div>
 
-    <!-- PATENTS -->
-    <div class="proxy-section-head">Patents (PatentsView)</div>
+    <!-- QUANTUM PATENTS BY COUNTRY — curated from MIT QIR 2025 -->
+    <div class="proxy-section-head">Quantum Patents by Country (MIT QIR 2025)</div>
     <div class="proxy-group">
       <div class="proxy-row">
-        <span class="proxy-label">Quantum Patents (US)</span>
+        <span class="proxy-label">🌐 Global Total (2024)</span>
+        <span class="proxy-value manual" style="color:#e0e8f0;">~12,200</span>
+      </div>
+      <div class="proxy-row">
+        <span class="proxy-label" style="color:#c8dcea;">🇨🇳 China (domestic)</span>
+        <span class="proxy-value manual" style="color:#e0e8f0;">7,308 &nbsp;<span style="color:#8ab4cc;font-size:9px;">(60%)</span></span>
+      </div>
+      <div class="proxy-row">
+        <span class="proxy-label" style="color:#c8dcea;">🇺🇸 United States (domestic)</span>
+        <span class="proxy-value manual" style="color:#e0e8f0;">2,301 &nbsp;<span style="color:#8ab4cc;font-size:9px;">(19%)</span></span>
+      </div>
+      <div class="proxy-row">
+        <span class="proxy-label" style="color:#c8dcea;">🌐 PCT / Int'l (WO) — Total</span>
+        <span class="proxy-value manual" style="color:#e0e8f0;">1,072 &nbsp;<span style="color:#8ab4cc;font-size:9px;">(9%)</span></span>
+      </div>
+      <div class="proxy-row" style="padding-left:20px;">
+        <span class="proxy-label" style="color:#a0c4d8; font-size:9px;">↳ 🇨🇳 China origin (est.)</span>
+        <span class="proxy-value manual" style="color:#c8dcea; font-size:10px;">~275 &nbsp;<span style="color:#8ab4cc;font-size:9px;">(~26%)</span></span>
+      </div>
+      <div class="proxy-row" style="padding-left:20px;">
+        <span class="proxy-label" style="color:#a0c4d8; font-size:9px;">↳ 🇺🇸 US origin (est.)</span>
+        <span class="proxy-value manual" style="color:#c8dcea; font-size:10px;">~210 &nbsp;<span style="color:#8ab4cc;font-size:9px;">(~20%)</span></span>
+      </div>
+      <a class="proxy-source" href="https://qir.mit.edu/patents/" target="_blank" rel="noopener" style="color:#7ab8d4;">↗ MIT Quantum Index Report 2025 — Patents</a>
+      <a class="proxy-source" href="https://www.wipo.int/web-publications/pct-yearly-review-executive-summary-2025/en/pct-yearly-review-2025-executive-summary.html" target="_blank" rel="noopener" style="color:#7ab8d4;">↗ WIPO PCT Yearly Review 2025 — Origin data</a>
+      <div style="padding:5px 10px 7px; font-size:8px; color:#8ab4cc; line-height:1.6; border-top:1px solid rgba(14,58,92,0.4);">
+        Domestic counts = patents filed at national office (CNIPA/USPTO).<br>
+        PCT/WO = separate international filings; no double-counting with domestic.<br>
+        PCT origin estimates based on WIPO 2024 all-tech ratio (quantum-specific origin<br>
+        not published). Multi-jurisdiction families: US ~48% vs China ~11% of global IP.
+      </div>
+    </div>
+
+    <!-- QUANTUM PATENTS — US live (PatentsView) -->
+    <div class="proxy-section-head">US Quantum Patents — Live (PatentsView)</div>
+    <div class="proxy-group">
+      <div class="proxy-row">
+        <span class="proxy-label">Quantum Patents (All)</span>
         <span class="proxy-value loading" id="pat-total">LOADING…</span>
       </div>
       <a class="proxy-source" href="https://patentsview.org/query#patents" target="_blank" rel="noopener">↗ patentsview.org — quantum</a>
