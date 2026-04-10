@@ -121,12 +121,26 @@
     height: 44px;
     background: linear-gradient(180deg, #060e1c 0%, #050d1a 100%);
     border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; padding: 0 12px; gap: 0;
-    overflow-x: auto; overflow-y: hidden;
+    display: flex; align-items: center;
     box-shadow: 0 2px 12px rgba(0,0,0,0.4);
   }
-  #filter-bar::-webkit-scrollbar { height: 2px; }
-  #filter-bar::-webkit-scrollbar-thumb { background: var(--border); }
+  #filter-bar-scroll {
+    flex: 1; min-width: 0;
+    display: flex; align-items: center;
+    overflow-x: auto; overflow-y: hidden;
+    padding: 0 10px;
+    gap: 0;
+  }
+  #filter-bar-scroll::-webkit-scrollbar { height: 2px; }
+  #filter-bar-scroll::-webkit-scrollbar-thumb { background: var(--border); }
+  #filter-bar-actions {
+    flex-shrink: 0;
+    display: flex; align-items: center; gap: 6px;
+    padding: 0 12px;
+    border-left: 1px solid var(--border);
+    height: 100%;
+    background: rgba(4,10,20,0.6);
+  }
 
   .fb-label {
     font-family: var(--font-hud); font-size: 7px; letter-spacing: 0.18em;
@@ -504,27 +518,30 @@
 
 <!-- ── FILTER TOOLBAR ─────────────────────────────── -->
 <div id="filter-bar">
-  <span class="fb-label">MAP</span>
-  <button class="fb-btn active" data-layer="dark">🌑 Dark</button>
-  <button class="fb-btn" data-layer="satellite">🛰️ Satellite</button>
-  <button class="fb-btn" data-layer="street">🗺️ Street</button>
-  <button class="fb-btn" data-layer="terrain">🏔️ Terrain</button>
-  <div class="fb-divider"></div>
-  <span class="fb-label">NODES</span>
-  <button class="fb-node-btn fb-btn active" data-cat="computing" style="color:#00ffcc;">⬤ Computing</button>
-  <button class="fb-node-btn fb-btn active" data-cat="sensing" style="color:#00d4ff;">⬤ Sensing</button>
-  <button class="fb-node-btn fb-btn active" data-cat="comms" style="color:#9b59ff;">⬤ Comms</button>
-  <button class="fb-node-btn fb-btn active" data-cat="multi" style="color:#f0c040;">⬤ Multi</button>
-  <div class="fb-divider"></div>
-  <span class="fb-label">CHINESE PORTS</span>
-  <button class="cports-toggle fb-port-btn active" data-layer="kf3" style="color:#ff88ee;">⬤ KF#3 Sites (4)</button>
-  <button class="cports-toggle fb-port-btn active" data-layer="naval" style="color:#ff8888;">⬤ Naval Activity (30)</button>
-  <button class="cports-toggle fb-port-btn active" data-layer="completed" style="color:#ffcc66;">⬤ Completed (105)</button>
-  <button class="cports-toggle fb-port-btn active" data-layer="pipeline" style="color:#ffee88;">⬤ Pipeline (56)</button>
-  <div class="fb-divider"></div>
-  <button class="fb-action-btn" id="trl-toggle-btn">📡 TRL TRACKER</button>
-  <button class="fb-action-btn" id="metrics-toggle-btn" style="margin-left:6px;">📊 DATA METRICS</button>
-  <button class="fb-action-btn" id="news-toggle-btn" style="margin-left:6px;">📰 OSINT NEWS</button>
+  <div id="filter-bar-scroll">
+    <span class="fb-label">MAP</span>
+    <button class="fb-btn active" data-layer="dark">🌑 Dark</button>
+    <button class="fb-btn" data-layer="satellite">🛰️ Satellite</button>
+    <button class="fb-btn" data-layer="street">🗺️ Street</button>
+    <button class="fb-btn" data-layer="terrain">🏔️ Terrain</button>
+    <div class="fb-divider"></div>
+    <span class="fb-label">NODES</span>
+    <button class="fb-node-btn fb-btn active" data-cat="computing" style="color:#00ffcc;">⬤ Computing</button>
+    <button class="fb-node-btn fb-btn active" data-cat="sensing" style="color:#00d4ff;">⬤ Sensing</button>
+    <button class="fb-node-btn fb-btn active" data-cat="comms" style="color:#9b59ff;">⬤ Comms</button>
+    <button class="fb-node-btn fb-btn active" data-cat="multi" style="color:#f0c040;">⬤ Multi</button>
+    <div class="fb-divider"></div>
+    <span class="fb-label">CHINESE PORTS</span>
+    <button class="cports-toggle fb-port-btn active" data-layer="kf3" style="color:#ff88ee;">⬤ KF#3 Sites (4)</button>
+    <button class="cports-toggle fb-port-btn active" data-layer="naval" style="color:#ff8888;">⬤ Naval Activity (30)</button>
+    <button class="cports-toggle fb-port-btn active" data-layer="completed" style="color:#ffcc66;">⬤ Completed (105)</button>
+    <button class="cports-toggle fb-port-btn active" data-layer="pipeline" style="color:#ffee88;">⬤ Pipeline (56)</button>
+  </div>
+  <div id="filter-bar-actions">
+    <button class="fb-action-btn" id="trl-toggle-btn">📡 TRL TRACKER</button>
+    <button class="fb-action-btn" id="metrics-toggle-btn">📊 DATA METRICS</button>
+    <button class="fb-action-btn" id="news-toggle-btn">📰 OSINT NEWS</button>
+  </div>
 </div>
 
 <!-- ── LEGEND ─────────────────────────────────────── -->
@@ -781,6 +798,7 @@
   </div>
   <div class="news-tabs">
     <button class="news-tab active" data-tab="gdelt">🌐 Global (GDELT)</button>
+    <button class="news-tab" data-tab="gnews">📰 Google News</button>
     <button class="news-tab" data-tab="newsapi">🇺🇸 US / Allied (NewsAPI)</button>
   </div>
   <div class="news-body" id="news-body">
@@ -1265,44 +1283,35 @@ document.getElementById('refresh-btn').addEventListener('click', fetchAll);
 fetchAll();
 
 // ══════════════════════════════════════════════════════════
-// NEWS PANEL — GDELT + NewsAPI
+// NEWS PANEL — via Netlify Function proxy (server-side)
+// No API keys in browser. No CORS/CSP issues.
+// Endpoint: /api/news-proxy?source=gdelt|gnews|newsapi
 // ══════════════════════════════════════════════════════════
 
-// ⚠ API key embedded for static hosting. Free tier only — no billing exposure.
-// Rotate key if this file is shared publicly.
-const NEWS_API_KEY = '5120ae1753ea4e658e5741ea10c5f6f9';
-
-const NEWS_QUERIES = {
-  sensing: '"quantum sensing" OR "quantum radar" OR "quantum gravimetry" OR "quantum magnetometry" OR "quantum navigation" OR "Rydberg" OR "quantum inertial"',
-  broad:   'quantum sensing OR quantum technology military OR quantum PNT OR quantum SIGINT'
-};
+const NEWS_PROXY = '/api/news-proxy';
 
 let activeNewsTab = 'gdelt';
-let newsCache = { gdelt: null, newsapi: null };
+let newsCache = { gdelt: null, gnews: null, newsapi: null };
 
 // ── HELPERS ────────────────────────────────────────────
 function timeAgo(dateStr) {
   const diff = (Date.now() - new Date(dateStr)) / 1000;
-  if (diff < 3600)   return Math.floor(diff / 60) + 'm ago';
-  if (diff < 86400)  return Math.floor(diff / 3600) + 'h ago';
+  if (isNaN(diff) || diff < 0) return 'recent';
+  if (diff < 3600)  return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
   return Math.floor(diff / 86400) + 'd ago';
 }
 
 const COUNTRY_FLAGS = {
-  'United States': '🇺🇸', 'China': '🇨🇳', 'United Kingdom': '🇬🇧',
-  'Germany': '🇩🇪', 'France': '🇫🇷', 'Japan': '🇯🇵', 'Russia': '🇷🇺',
-  'India': '🇮🇳', 'Australia': '🇦🇺', 'Canada': '🇨🇦', 'South Korea': '🇰🇷',
-  'Israel': '🇮🇱', 'Singapore': '🇸🇬', 'Netherlands': '🇳🇱',
-  'Switzerland': '🇨🇭', 'Sweden': '🇸🇪',
+  'United States':'🇺🇸','China':'🇨🇳','United Kingdom':'🇬🇧','Germany':'🇩🇪',
+  'France':'🇫🇷','Japan':'🇯🇵','Russia':'🇷🇺','India':'🇮🇳','Australia':'🇦🇺',
+  'Canada':'🇨🇦','South Korea':'🇰🇷','Israel':'🇮🇱','Singapore':'🇸🇬',
+  'Netherlands':'🇳🇱','Switzerland':'🇨🇭','Sweden':'🇸🇪','Taiwan':'🇹🇼',
 };
-
-function countryFlag(country) {
-  return COUNTRY_FLAGS[country] || '🌐';
-}
-
-function sanitize(str) {
-  if (!str) return '';
-  return str.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function countryFlag(c) { return COUNTRY_FLAGS[c] || '🌐'; }
+function san(s) {
+  if (!s) return '';
+  return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ── RENDER ─────────────────────────────────────────────
@@ -1314,88 +1323,48 @@ function renderArticles(articles) {
   }
   body.innerHTML = articles.map(a => `
     <div class="news-article">
-      <a class="news-headline" href="${sanitize(a.url)}" target="_blank" rel="noopener">${sanitize(a.title)}</a>
+      <a class="news-headline" href="${san(a.url)}" target="_blank" rel="noopener">${san(a.title)}</a>
       <div class="news-meta">
-        <span class="news-source">${sanitize(a.source)}</span>
-        <span class="news-country">${countryFlag(a.country)} ${sanitize(a.country)}</span>
+        <span class="news-source">${san(a.source)}</span>
+        ${a.country ? `<span class="news-country">${countryFlag(a.country)} ${san(a.country)}</span>` : ''}
         ${a.lang && a.lang !== 'English' && a.lang !== 'en'
-          ? `<span class="news-lang-badge">${sanitize(a.lang)}</span>` : ''}
+          ? `<span class="news-lang-badge">${san(a.lang)}</span>` : ''}
         <span class="news-time">${timeAgo(a.date)}</span>
       </div>
     </div>
   `).join('');
 }
 
-// ── GDELT FETCH ────────────────────────────────────────
-async function fetchGDELT() {
-  const body = document.getElementById('news-body');
-  body.innerHTML = '<div class="news-status loading">FETCHING GDELT FEED…</div>';
-  try {
-    const query = encodeURIComponent(
-      '"quantum sensing" OR "quantum radar" OR "quantum gravimetry" OR "quantum navigation" OR "Rydberg atom" OR "quantum magnetometry" OR "quantum inertial navigation"'
-    );
-    const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${query}&mode=artlist&maxrecords=30&format=json&timespan=14d&sort=datedesc`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-
-    const articles = (data.articles || []).map(a => ({
-      title:   a.title || '(No title)',
-      url:     a.url,
-      source:  a.domain || 'Unknown',
-      country: a.sourcecountry || 'Unknown',
-      lang:    a.language || '',
-      date:    a.seendate
-        ? a.seendate.replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/, '$1-$2-$3T$4:$5:$6Z')
-        : new Date().toISOString()
-    }));
-
-    newsCache.gdelt = articles;
-    renderArticles(articles);
-    document.getElementById('news-last-updated').textContent =
-      `GDELT — ${new Date().toUTCString().slice(0,25)}`;
-  } catch(e) {
-    body.innerHTML = `<div class="news-status error">GDELT fetch failed: ${e.message}<br><span style="font-size:8px;color:#666;">Check network or try again.</span></div>`;
-  }
+function setNewsStatus(msg, type = 'loading') {
+  document.getElementById('news-body').innerHTML =
+    `<div class="news-status ${type}">${msg}</div>`;
 }
 
-// ── NEWSAPI FETCH ──────────────────────────────────────
-async function fetchNewsAPI() {
-  const body = document.getElementById('news-body');
-  body.innerHTML = '<div class="news-status loading">FETCHING NEWSAPI FEED…</div>';
+function setNewsTimestamp(label, count) {
+  document.getElementById('news-last-updated').textContent =
+    `${label} — ${count} articles — ${new Date().toUTCString().slice(0,25)}`;
+}
+
+// ── FETCH (all sources via same proxy endpoint) ─────────
+async function fetchSource(source) {
+  const labels = { gdelt: '🌐 GDELT', gnews: '📰 Google News', newsapi: '🇺🇸 NewsAPI' };
+  setNewsStatus(`FETCHING ${labels[source] || source} FEED…`);
   try {
-    const q = encodeURIComponent(
-      '"quantum sensing" OR "quantum radar" OR "quantum gravimetry" OR "quantum navigation" OR "Rydberg" OR "quantum inertial" OR "quantum magnetometry"'
-    );
-    const url = `https://newsapi.org/v2/everything?q=${q}&sortBy=publishedAt&pageSize=30&language=en&apiKey=${NEWS_API_KEY}`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `HTTP ${res.status}`);
-    }
+    const res = await fetch(`${NEWS_PROXY}?source=${source}`);
+    if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
     const data = await res.json();
+    if (data.error) throw new Error(data.error);
 
-    const articles = (data.articles || [])
-      .filter(a => a.title && !a.title.includes('[Removed]'))
-      .map(a => ({
-        title:   a.title,
-        url:     a.url,
-        source:  a.source?.name || 'Unknown',
-        country: 'N/A',   // NewsAPI free tier doesn't return country
-        lang:    'en',
-        date:    a.publishedAt || new Date().toISOString()
-      }));
-
-    newsCache.newsapi = articles;
+    const articles = data.articles || [];
+    newsCache[source] = articles;
     renderArticles(articles);
-    document.getElementById('news-last-updated').textContent =
-      `NewsAPI — ${new Date().toUTCString().slice(0,25)}`;
+    setNewsTimestamp(labels[source], articles.length);
   } catch(e) {
-    // NewsAPI blocks CORS from non-localhost on free tier in some configurations
-    const corsMsg = e.message.includes('Failed to fetch') || e.message.includes('CORS')
-      ? '<br><span style="font-size:8px;color:#888;">NewsAPI free tier may block browser requests from deployed sites. Try accessing from localhost or upgrade to a paid NewsAPI plan.</span>'
-      : '';
-    body.innerHTML = `<div class="news-status error">NewsAPI fetch failed: ${e.message}${corsMsg}</div>`;
+    setNewsStatus(
+      `Fetch failed: ${san(e.message)}<br><span style="font-size:8px;color:#666;">Check network or try refreshing.</span>`,
+      'error'
+    );
+    console.error(`[news] ${source} error:`, e.message);
   }
 }
 
@@ -1405,19 +1374,12 @@ document.querySelectorAll('.news-tab').forEach(tab => {
     document.querySelectorAll('.news-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     activeNewsTab = tab.dataset.tab;
-
-    // Use cache if available, else fetch
-    if (activeNewsTab === 'gdelt') {
-      if (newsCache.gdelt) renderArticles(newsCache.gdelt);
-      else fetchGDELT();
-    } else {
-      if (newsCache.newsapi) renderArticles(newsCache.newsapi);
-      else fetchNewsAPI();
-    }
+    if (newsCache[activeNewsTab]) renderArticles(newsCache[activeNewsTab]);
+    else fetchSource(activeNewsTab);
   });
 });
 
-// ── NEWS PANEL TOGGLE ─────────────────────────────────
+// ── PANEL TOGGLE ───────────────────────────────────────
 const newsPanel = document.getElementById('news-panel');
 const newsBtn   = document.getElementById('news-toggle-btn');
 
@@ -1425,25 +1387,21 @@ newsBtn.addEventListener('click', () => {
   const opening = !newsPanel.classList.contains('open');
   newsPanel.classList.toggle('open', opening);
   newsBtn.classList.toggle('active', opening);
-  // Close other panels
   if (opening) {
     trlPanel.classList.remove('open');     trlBtn.classList.remove('active');
     metricsPanel.classList.remove('open'); metricsBtn.classList.remove('active');
-    // Auto-fetch GDELT on first open
-    if (!newsCache.gdelt) fetchGDELT();
+    if (!newsCache.gdelt) fetchSource('gdelt');
   }
 });
 
 document.getElementById('news-close').addEventListener('click', () => {
-  newsPanel.classList.remove('open');
-  newsBtn.classList.remove('active');
+  newsPanel.classList.remove('open'); newsBtn.classList.remove('active');
 });
 
-// ── REFRESH BUTTON ─────────────────────────────────────
+// ── REFRESH ────────────────────────────────────────────
 document.getElementById('news-refresh-btn').addEventListener('click', () => {
-  newsCache[activeNewsTab] = null; // clear cache
-  if (activeNewsTab === 'gdelt') fetchGDELT();
-  else fetchNewsAPI();
+  newsCache[activeNewsTab] = null;
+  fetchSource(activeNewsTab);
 });
 </script>
 </body>
