@@ -135,7 +135,12 @@ exports.handler = async (event) => {
 
   try {
     if (source === 'gdelt') {
-      const q = encodeURIComponent(`${QUANTUM_QUERY} OR "quantum technology" military`);
+      const terms = [
+        '"quantum sensing"', '"quantum radar"', '"quantum gravimetry"',
+        '"quantum navigation"', '"Rydberg"', '"quantum magnetometry"',
+        '"quantum inertial navigation"', '"quantum technology"'
+      ].join(' OR ');
+      const q = encodeURIComponent(`(${terms})`);
       url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=artlist&maxrecords=30&format=json&timespan=14d&sort=datedesc`;
       result = await fetchUrl(url);
       articles = parseGDELT(result.body);
