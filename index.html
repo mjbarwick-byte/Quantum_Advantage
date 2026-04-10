@@ -377,7 +377,10 @@
     background: rgba(155,89,255,0.08);
   }
 
-  .news-refresh {
+  .news-original {
+    font-size: 9px; color: var(--dim); line-height: 1.4;
+    margin: 2px 0 5px; font-style: italic; letter-spacing: 0.02em;
+  }
     display: flex; align-items: center; justify-content: space-between;
     padding: 7px 14px; border-top: 1px solid var(--border);
     flex-shrink: 0;
@@ -1321,9 +1324,15 @@ function renderArticles(articles) {
     body.innerHTML = '<div class="news-status error">No articles found. Try refreshing.</div>';
     return;
   }
-  body.innerHTML = articles.map(a => `
+  body.innerHTML = articles.map(a => {
+    const displayTitle = a.translated_title || a.title;
+    const originalLine = a.translated_title
+      ? `<div class="news-original">🌐 ${san(a.title)}</div>`
+      : '';
+    return `
     <div class="news-article">
-      <a class="news-headline" href="${san(a.url)}" target="_blank" rel="noopener">${san(a.title)}</a>
+      <a class="news-headline" href="${san(a.url)}" target="_blank" rel="noopener">${san(displayTitle)}</a>
+      ${originalLine}
       <div class="news-meta">
         <span class="news-source">${san(a.source)}</span>
         ${a.country ? `<span class="news-country">${countryFlag(a.country)} ${san(a.country)}</span>` : ''}
@@ -1331,8 +1340,8 @@ function renderArticles(articles) {
           ? `<span class="news-lang-badge">${san(a.lang)}</span>` : ''}
         <span class="news-time">${timeAgo(a.date)}</span>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function setNewsStatus(msg, type = 'loading') {
