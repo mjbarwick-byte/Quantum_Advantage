@@ -116,7 +116,54 @@ function parseNewsAPI(body) {
     }));
 }
 
-// ── Main handler ────────────────────────────────────────────
+// ── Language code map (GDELT returns full names) ────────────
+const LANG_CODES = {
+  'Russian':'ru','Chinese':'zh','Arabic':'ar','French':'fr','German':'de',
+  'Spanish':'es','Japanese':'ja','Korean':'ko','Portuguese':'pt','Italian':'it',
+  'Dutch':'nl','Swedish':'sv','Danish':'da','Finnish':'fi','Hindi':'hi',
+  'Malayalam':'ml','Tamil':'ta','Bengali':'bn','Urdu':'ur','Persian':'fa',
+  'Turkish':'tr','Vietnamese':'vi','Thai':'th','Indonesian':'id','Malay':'ms',
+  'Polish':'pl','Czech':'cs','Romanian':'ro','Ukrainian':'uk','Greek':'el',
+  'Hebrew':'he','Norwegian':'no','Catalan':'ca','Hungarian':'hu','Slovak':'sk',
+};
+
+async function translateTitle(text, langName) {
+  if (!text || text.length > 300) return null; // skip very long titles
+  const code = LANG_CODES[langName] || 'auto';
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${code}|en`;
+  try {
+    const res = await fetchUrl(url, 6000);
+    const data = JSON.parse(res.body);
+    const translated = data?.responseData?.translatedText;
+    // Discard if identical to input (already English) or error string
+    if (translated && translated !== text && !translated.toLowerCase().includes('mymemory')) {
+      return translated;
+    }
+  } catch(_) {}
+  return null;
+}
+
+async function translateArticles(articles) {
+  const nonEnglish = articles.filter(
+    a => a.lang && a.lang !== 'English' && a.lang !== 'en'
+  );
+  if (nonEnglish.length === 0) return articles;
+
+  // Translate all non-English titles in parallel
+  const translations = await Promise.allSettled(
+    nonEnglish.map(a => translateTitle(a.title, a.lang))
+  );
+
+  let idx = 0;
+  return articles.map(a => {
+    if (a.lang && a.lang !== 'English' && a.lang !== 'en') {
+      const result = translations[idx++];
+      const translated = result.status === 'fulfilled' ? result.value : null;
+      return translated ? { ...a, translated_title: translated } : a;
+    }
+    return a;
+  });
+}
 exports.handler = async (event) => {
   const HEADERS = {
     'Content-Type': 'application/json',
@@ -144,6 +191,7 @@ exports.handler = async (event) => {
       url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=artlist&maxrecords=30&format=json&timespan=14d&sort=datedesc`;
       result = await fetchUrl(url);
       articles = parseGDELT(result.body);
+      articles = await translateArticles(articles); // translate non-English titles
 
     } else if (source === 'gnews') {
       const q = encodeURIComponent(
