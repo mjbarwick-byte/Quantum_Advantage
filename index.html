@@ -799,10 +799,9 @@
     <h2>📰 Quantum OSINT News Stream</h2>
     <button class="trl-close" id="news-close">×</button>
   </div>
-  <div class="news-tabs">
-    <button class="news-tab active" data-tab="gdelt">🌐 Global (GDELT)</button>
-    <button class="news-tab" data-tab="gnews">📰 Google News</button>
-    <button class="news-tab" data-tab="newsapi">🇺🇸 US / Allied (NewsAPI)</button>
+  <div style="padding:8px 14px 6px; border-bottom:1px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:space-between;">
+    <span style="font-size:8px;color:#8ab4cc;letter-spacing:0.08em;">GDELT · GOOGLE NEWS · NEWSAPI — deduplicated, newest first</span>
+    <span id="news-source-counts" style="font-size:8px;color:var(--dim);letter-spacing:0.06em;"></span>
   </div>
   <div class="news-body" id="news-body">
     <div class="news-status loading">INITIALIZING FEED…</div>
@@ -1292,11 +1291,9 @@ fetchAll();
 // ══════════════════════════════════════════════════════════
 
 const NEWS_PROXY = '/api/news-proxy';
+let newsCache = null;
 
-let activeNewsTab = 'gdelt';
-let newsCache = { gdelt: null, gnews: null, newsapi: null };
-
-// ── HELPERS ────────────────────────────────────────────
+// ── HELPERS ────────────────────────────────────────────────
 function timeAgo(dateStr) {
   const diff = (Date.now() - new Date(dateStr)) / 1000;
   if (isNaN(diff) || diff < 0) return 'recent';
@@ -1304,7 +1301,6 @@ function timeAgo(dateStr) {
   if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
   return Math.floor(diff / 86400) + 'd ago';
 }
-
 const COUNTRY_FLAGS = {
   'United States':'🇺🇸','China':'🇨🇳','United Kingdom':'🇬🇧','Germany':'🇩🇪',
   'France':'🇫🇷','Japan':'🇯🇵','Russia':'🇷🇺','India':'🇮🇳','Australia':'🇦🇺',
@@ -1316,8 +1312,21 @@ function san(s) {
   if (!s) return '';
   return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+function setNewsStatus(msg, type = 'loading') {
+  document.getElementById('news-body').innerHTML =
+    `<div class="news-status ${type}">${msg}</div>`;
+}
 
-// ── RENDER ─────────────────────────────────────────────
+// ── FEED BADGE & RENDER ────────────────────────────────────
+const FEED_COLORS = {
+  'GDELT':      { bg:'rgba(155,89,255,0.15)', border:'#9b59ff', color:'#c39fff' },
+  'Google News':{ bg:'rgba(0,212,255,0.10)',  border:'#00d4ff', color:'#7ab8d4' },
+  'NewsAPI':    { bg:'rgba(0,255,150,0.10)',  border:'#00ff96', color:'#66ddaa' },
+};
+function feedBadge(feed) {
+  const s = FEED_COLORS[feed] || { bg:'rgba(100,100,100,0.1)', border:'#666', color:'#999' };
+  return `<span style="font-family:var(--font-hud);font-size:7px;letter-spacing:0.08em;padding:1px 5px;border-radius:2px;border:1px solid ${s.border};color:${s.color};background:${s.bg};text-transform:uppercase;">${san(feed)}</span>`;
+}
 function renderArticles(articles) {
   const body = document.getElementById('news-body');
   if (!articles || articles.length === 0) {
@@ -1327,13 +1336,13 @@ function renderArticles(articles) {
   body.innerHTML = articles.map(a => {
     const displayTitle = a.translated_title || a.title;
     const originalLine = a.translated_title
-      ? `<div class="news-original">🌐 ${san(a.title)}</div>`
-      : '';
+      ? `<div class="news-original">🌐 ${san(a.title)}</div>` : '';
     return `
     <div class="news-article">
       <a class="news-headline" href="${san(a.url)}" target="_blank" rel="noopener">${san(displayTitle)}</a>
       ${originalLine}
       <div class="news-meta">
+        ${feedBadge(a.feed || '')}
         <span class="news-source">${san(a.source)}</span>
         ${a.country ? `<span class="news-country">${countryFlag(a.country)} ${san(a.country)}</span>` : ''}
         ${a.lang && a.lang !== 'English' && a.lang !== 'en'
@@ -1343,52 +1352,37 @@ function renderArticles(articles) {
     </div>`;
   }).join('');
 }
-
-function setNewsStatus(msg, type = 'loading') {
-  document.getElementById('news-body').innerHTML =
-    `<div class="news-status ${type}">${msg}</div>`;
-}
-
-function setNewsTimestamp(label, count) {
-  document.getElementById('news-last-updated').textContent =
-    `${label} — ${count} articles — ${new Date().toUTCString().slice(0,25)}`;
-}
-
-// ── FETCH (all sources via same proxy endpoint) ─────────
-async function fetchSource(source) {
-  const labels = { gdelt: '🌐 GDELT', gnews: '📰 Google News', newsapi: '🇺🇸 NewsAPI' };
-  setNewsStatus(`FETCHING ${labels[source] || source} FEED…`);
+async function fetchAllNews() {
+  setNewsStatus('FETCHING ALL SOURCES — GDELT · GOOGLE NEWS · NEWSAPI…');
   try {
-    const res = await fetch(`${NEWS_PROXY}?source=${source}`);
+    const res = await fetch(NEWS_PROXY);
     if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
     const articles = data.articles || [];
-    newsCache[source] = articles;
+    newsCache = articles;
     renderArticles(articles);
-    setNewsTimestamp(labels[source], articles.length);
+
+    // Show per-source counts in header
+    const sc = document.getElementById('news-source-counts');
+    if (sc && data.sources) {
+      const g = data.sources.gdelt, gn = data.sources.gnews, na = data.sources.newsapi;
+      sc.textContent = `G:${g} GN:${gn} NA:${na} → ${articles.length} unique`;
+    }
+
+    document.getElementById('news-last-updated').textContent =
+      `${articles.length} articles — ${new Date().toUTCString().slice(0,25)}`;
   } catch(e) {
     setNewsStatus(
       `Fetch failed: ${san(e.message)}<br><span style="font-size:8px;color:#666;">Check network or try refreshing.</span>`,
       'error'
     );
-    console.error(`[news] ${source} error:`, e.message);
+    console.error('[news] error:', e.message);
   }
 }
 
-// ── TAB SWITCHING ──────────────────────────────────────
-document.querySelectorAll('.news-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.news-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    activeNewsTab = tab.dataset.tab;
-    if (newsCache[activeNewsTab]) renderArticles(newsCache[activeNewsTab]);
-    else fetchSource(activeNewsTab);
-  });
-});
-
-// ── PANEL TOGGLE ───────────────────────────────────────
+// ── PANEL TOGGLE ───────────────────────────────────────────
 const newsPanel = document.getElementById('news-panel');
 const newsBtn   = document.getElementById('news-toggle-btn');
 
@@ -1399,7 +1393,8 @@ newsBtn.addEventListener('click', () => {
   if (opening) {
     trlPanel.classList.remove('open');     trlBtn.classList.remove('active');
     metricsPanel.classList.remove('open'); metricsBtn.classList.remove('active');
-    if (!newsCache.gdelt) fetchSource('gdelt');
+    if (!newsCache) fetchAllNews();
+    else renderArticles(newsCache);
   }
 });
 
@@ -1407,11 +1402,10 @@ document.getElementById('news-close').addEventListener('click', () => {
   newsPanel.classList.remove('open'); newsBtn.classList.remove('active');
 });
 
-// ── REFRESH ────────────────────────────────────────────
 document.getElementById('news-refresh-btn').addEventListener('click', () => {
-  newsCache[activeNewsTab] = null;
-  fetchSource(activeNewsTab);
+  newsCache = null; fetchAllNews();
 });
+
 </script>
 </body>
 </html>
