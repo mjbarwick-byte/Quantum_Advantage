@@ -192,6 +192,7 @@
   #lg-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 6px 8px 5px; border-bottom: 1px solid var(--border);
+    cursor: move; user-select: none;
   }
   #lg-controls { display: flex; gap: 3px; }
   #lg-controls button {
@@ -378,12 +379,10 @@
   /* ── NEWS TICKER ─────────────────────────────────── */
   #news-ticker-bar {
     position: fixed; bottom: 28px; left: 0; right: 0; z-index: 1050;
-    height: 0; overflow: hidden;
+    height: 32px; overflow: hidden;
     background: rgba(4,11,22,0.97); border-top: 1px solid var(--border);
     display: flex; align-items: center;
-    transition: height .3s ease;
   }
-  #news-ticker-bar.open { height: 32px; }
   #ticker-label {
     flex-shrink: 0; padding: 0 10px;
     font-family: var(--font-hud); font-size: 8px; letter-spacing: 0.16em;
@@ -574,6 +573,57 @@
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── QUANTUM NEWS LIST PANEL ──────────────────────── */
+  #news-list-panel {
+    position: fixed; bottom: 60px; right: 0; z-index: 1148;
+    width: 400px; max-height: calc(100vh - 160px);
+    background: rgba(4,11,22,0.97); border-left: 1px solid var(--border);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+    transform: translateX(100%); transition: transform .3s ease;
+    display: flex; flex-direction: column;
+    box-shadow: -4px 0 24px rgba(0,0,0,0.6);
+    overflow: hidden;
+  }
+  #news-list-panel.open { transform: translateX(0); }
+
+  .news-list-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    background: rgba(0,212,255,0.05);
+  }
+  .news-list-title {
+    font-family: var(--font-hud); font-size: 10px; letter-spacing: 0.16em;
+    color: var(--cyan); text-transform: uppercase;
+  }
+  .news-list-close {
+    background: none; border: none; color: var(--dim); font-size: 18px;
+    cursor: pointer; line-height: 1; padding: 0 2px; transition: color .2s;
+  }
+  .news-list-close:hover { color: #fff; }
+  .news-list-subheader {
+    padding: 6px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(0,0,0,0.2);
+  }
+  #news-body {
+    flex: 1; overflow-y: auto; padding: 0;
+  }
+  #news-body::-webkit-scrollbar { width: 3px; }
+  #news-body::-webkit-scrollbar-thumb { background: var(--border); }
+  #news-last-updated {
+    padding: 4px 12px; font-size: 8px; color: #8ab4cc; letter-spacing: 0.05em;
+    border-top: 1px solid rgba(14,58,92,0.4); flex-shrink: 0;
+  }
+  .news-refresh-btn {
+    background: none; border: 1px solid var(--border); color: var(--dim);
+    font-family: var(--font-mono); font-size: 9px; padding: 4px 10px;
+    cursor: pointer; letter-spacing: 0.08em; border-radius: 2px;
+    transition: color .2s, border-color .2s;
+  }
+  .news-refresh-btn:hover { color: var(--cyan); border-color: var(--cyan); }
+  #news-source-counts { font-size: 8px; color: var(--dim); letter-spacing: 0.05em; }
 </style>
 </head>
 <body>
@@ -629,6 +679,20 @@
     onmouseout="this.style.background='rgba(155,89,255,0.1)'">
     📄 Full Report
   </a>
+</div>
+
+<!-- ── QUANTUM NEWS LIST PANEL ──────────────────── -->
+<div id="news-list-panel">
+  <div class="news-list-header">
+    <span class="news-list-title">⚡ Quantum News Stream</span>
+    <button class="news-list-close" id="news-list-close">×</button>
+  </div>
+  <div class="news-list-subheader">
+    <span id="news-source-counts" style="font-size:8px;color:var(--dim);letter-spacing:0.05em;"></span>
+    <button class="news-refresh-btn" id="news-refresh-btn">⟳ Refresh</button>
+  </div>
+  <div id="news-body"></div>
+  <div id="news-last-updated">Not yet fetched</div>
 </div>
 
 <!-- ── CORNER BRACKETS ────────────────────────────── -->
@@ -973,7 +1037,7 @@
 
 <!-- ── QUANTUM NEWS TICKER ─────────────────────── -->
 <div id="news-ticker-bar">
-  <div id="ticker-label">⚡ QUANTUM NEWS</div>
+  <button id="ticker-toggle-btn" style="flex-shrink:0;padding:0 10px;background:none;border:none;border-right:1px solid var(--border);color:var(--cyan);font-family:var(--font-hud);font-size:8px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;height:100%;white-space:nowrap;transition:background .2s;" onmouseover="this.style.background='rgba(0,212,255,0.1)'" onmouseout="this.style.background='none'">📰 QUANTUM NEWS ▲</button>
   <div id="ticker-scroll-wrap">
     <div id="ticker-scroll">
       <span id="ticker-status">FETCHING QUANTUM NEWS…</span>
@@ -1335,6 +1399,40 @@ document.querySelectorAll('.lg-toggle-btn[data-cat]').forEach(btn => {
   });
 });
 
+// ── Legend Drag ────────────────────────────────────────────
+(function() {
+  const el = document.getElementById('legend');
+  const handle = document.getElementById('lg-header');
+  if (!el || !handle) return;
+  let isDragging = false, startX, startY, startLeft, startBottom;
+  handle.addEventListener('mousedown', (e) => {
+    if (e.target.tagName === 'BUTTON') return;
+    isDragging = true;
+    const rect = el.getBoundingClientRect();
+    startX = e.clientX; startY = e.clientY;
+    startLeft   = rect.left;
+    startBottom = window.innerHeight - rect.bottom;
+    el.style.transition = 'none';
+    document.body.style.cursor = 'move';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const newLeft   = Math.max(0, Math.min(window.innerWidth  - el.offsetWidth,  startLeft   + e.clientX - startX));
+    const newBottom = Math.max(0, Math.min(window.innerHeight - el.offsetHeight, startBottom - (e.clientY - startY)));
+    el.style.left   = newLeft   + 'px';
+    el.style.bottom = newBottom + 'px';
+    const cp = document.getElementById('country-panel');
+    if (cp && cp.style.display !== 'none') {
+      cp.style.left   = (newLeft + el.offsetWidth + 8) + 'px';
+      cp.style.bottom = newBottom + 'px';
+    }
+  });
+  document.addEventListener('mouseup', () => {
+    if (isDragging) { isDragging = false; document.body.style.cursor = ''; }
+  });
+})();
+
 // Legend port toggles (moved from filter bar)
 document.querySelectorAll('.lg-toggle-btn[data-layer]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1357,6 +1455,84 @@ const tickerStatus = document.getElementById('ticker-status');
 const newsBtn      = document.getElementById('news-toggle-btn');
 let tickerCache    = null;
 
+function san(s) {
+  if (!s) return '';
+  return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function timeAgo(dateStr) {
+  const diff = (Date.now() - new Date(dateStr)) / 1000;
+  if (isNaN(diff) || diff < 0) return 'recent';
+  if (diff < 3600)  return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return Math.floor(diff / 86400) + 'd ago';
+}
+
+const COUNTRY_FLAGS_N = {
+  'United States':'🇺🇸','China':'🇨🇳','United Kingdom':'🇬🇧','Germany':'🇩🇪',
+  'France':'🇫🇷','Japan':'🇯🇵','Russia':'🇷🇺','India':'🇮🇳','Australia':'🇦🇺',
+  'Canada':'🇨🇦','South Korea':'🇰🇷','Israel':'🇮🇱','Singapore':'🇸🇬',
+  'Netherlands':'🇳🇱','Switzerland':'🇨🇭','Sweden':'🇸🇪','Taiwan':'🇹🇼',
+};
+
+const CRED_HIGH_N = new Set([
+  'nature.com','ieee.org','defense.gov','darpa.mil','army.mil','navy.mil',
+  'dod.gov','nist.gov','whitehouse.gov','reuters.com','apnews.com',
+  'defensenews.com','defenseone.com','breakingdefense.com','janes.com',
+  'csis.org','rand.org','brookings.edu','cnas.org','iiss.org','cfr.org',
+  'nato.int','gov.uk','canada.ca','defence.gov.au','scmp.com',
+  'quantamagazine.org','mit.edu','arxiv.org','aps.org',
+]);
+const CRED_LOW_N = new Set([
+  'xinhuanet.com','chinadaily.com.cn','globaltimes.cn','cgtn.com',
+  'rt.com','sputniknews.com','tass.com','presstv.ir',
+]);
+
+function getCredN(source) {
+  if (!source) return 'M';
+  const d = source.toLowerCase().replace(/^www\./,'');
+  for (const h of CRED_HIGH_N) { if (d.includes(h)) return 'H'; }
+  for (const l of CRED_LOW_N)  { if (d.includes(l)) return 'L'; }
+  return 'M';
+}
+
+const CRED_COLORS = { H:'#00ff96', M:'#ffb300', L:'#ff4444' };
+
+function renderArticles(articles) {
+  const body = document.getElementById('news-body');
+  if (!body) return;
+  if (!articles || articles.length === 0) {
+    body.innerHTML = '<div style="padding:16px;text-align:center;font-size:10px;color:var(--dim);">No articles found. Try refreshing.</div>';
+    return;
+  }
+  body.innerHTML = articles.map(a => {
+    const displayTitle = a.translated_title || a.title || '';
+    const originalLine = a.translated_title
+      ? `<div style="font-size:9px;color:var(--dim);font-style:italic;margin:2px 0 4px;">🌐 ${san(a.title)}</div>` : '';
+    const cred = getCredN(a.source);
+    const credColor = CRED_COLORS[cred];
+    const flag = COUNTRY_FLAGS_N[a.country] || '';
+    return `<div style="padding:8px 12px;border-bottom:1px solid rgba(14,58,92,0.4);border-left:2px solid ${credColor}30;background:${cred==='H'?'rgba(0,255,150,0.02)':cred==='L'?'rgba(255,68,68,0.03)':'transparent'};">
+      <a href="${san(a.url||'#')}" target="_blank" rel="noopener"
+         style="font-size:11px;color:#d0e8f4;text-decoration:none;line-height:1.4;display:block;margin-bottom:2px;"
+         onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='#d0e8f4'">${san(displayTitle)}</a>
+      ${originalLine}
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <span style="font-size:7px;padding:1px 5px;border:1px solid ${credColor};color:${credColor};border-radius:2px;font-family:var(--font-hud);letter-spacing:0.08em;">${cred==='H'?'HIGH':cred==='L'?'LOW':'MED'}</span>
+        <span style="font-size:9px;color:var(--dim);">${san(a.source||'')}</span>
+        ${flag?`<span>${flag} ${san(a.country||'')}</span>`:''}
+        ${a.lang&&a.lang!=='English'&&a.lang!=='en'?`<span style="font-size:8px;color:#9b59ff;border:1px solid #9b59ff44;padding:0 4px;border-radius:2px;">${san(a.lang)}</span>`:''}
+        <span style="font-size:9px;color:var(--dim);margin-left:auto;">${timeAgo(a.date||'')}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setNewsStatus(msg) {
+  const body = document.getElementById('news-body');
+  if (body) body.innerHTML = `<div style="padding:16px;text-align:center;font-size:10px;color:var(--dim);letter-spacing:0.06em;">${msg}</div>`;
+}
+
 function renderTicker(articles) {
   if (!articles || articles.length === 0) {
     tickerStatus.textContent = 'No articles found — click ⟳ to retry';
@@ -1368,8 +1544,10 @@ function renderTicker(articles) {
   const items = articles.map(a => {
     const title = a.translated_title || a.title || '';
     const src   = a.source || '';
-    return `<span class="ticker-item">
-      <span class="ticker-bullet">◆</span>
+    const cred  = getCredN(src);
+    const cc    = CRED_COLORS[cred];
+    return `<span class="ticker-item" style="border-left:2px solid ${cc}40;">
+      <span class="ticker-bullet" style="color:${cc};">◆</span>
       <a href="${(a.url||'#').replace(/"/g,'')}" target="_blank" rel="noopener">${title.replace(/</g,'&lt;')}</a>
       <span class="ticker-source">${src}</span>
     </span>`;
@@ -1378,8 +1556,12 @@ function renderTicker(articles) {
   tickerScroll.innerHTML = items + items;
   // Reset animation
   tickerScroll.style.animation = 'none';
-  tickerScroll.offsetHeight; // reflow
+  tickerScroll.offsetHeight;
   tickerScroll.style.animation = '';
+  // Also populate article list
+  renderArticles(articles);
+  const lu = document.getElementById('news-last-updated');
+  if (lu) lu.textContent = `${articles.length} articles — ${new Date().toUTCString().slice(0,25)}`;
 }
 
 async function fetchTickerNews() {
@@ -1399,16 +1581,46 @@ async function fetchTickerNews() {
   }
 }
 
-newsBtn.addEventListener('click', () => {
-  const opening = !tickerBar.classList.contains('open');
-  tickerBar.classList.toggle('open', opening);
+// Ticker is always visible — button now toggles the article LIST panel
+const newsListPanel = document.getElementById('news-list-panel');
+
+document.getElementById('ticker-toggle-btn').addEventListener('click', () => {
+  const opening = !newsListPanel.classList.contains('open');
+  newsListPanel.classList.toggle('open', opening);
   newsBtn.classList.toggle('active', opening);
+  document.getElementById('ticker-toggle-btn').textContent =
+    opening ? '📰 QUANTUM NEWS ▼' : '📰 QUANTUM NEWS ▲';
   if (opening && !tickerCache) fetchTickerNews();
+  else if (opening && tickerCache) renderArticles(tickerCache);
+});
+
+// Keep the filter bar button working too (opens list panel)
+newsBtn.addEventListener('click', () => {
+  const opening = !newsListPanel.classList.contains('open');
+  newsListPanel.classList.toggle('open', opening);
+  newsBtn.classList.toggle('active', opening);
+  document.getElementById('ticker-toggle-btn').textContent =
+    opening ? '📰 QUANTUM NEWS ▼' : '📰 QUANTUM NEWS ▲';
+  if (opening && !tickerCache) fetchTickerNews();
+  else if (opening && tickerCache) renderArticles(tickerCache);
+});
+
+document.getElementById('news-list-close').addEventListener('click', () => {
+  newsListPanel.classList.remove('open');
+  newsBtn.classList.remove('active');
+  document.getElementById('ticker-toggle-btn').textContent = '📰 QUANTUM NEWS ▲';
 });
 
 document.getElementById('ticker-refresh').addEventListener('click', () => {
   tickerCache = null; fetchTickerNews();
 });
+
+document.getElementById('news-refresh-btn').addEventListener('click', () => {
+  tickerCache = null; fetchTickerNews();
+});
+
+// Auto-fetch ticker on page load (so ticker scrolls immediately)
+setTimeout(() => { if (!tickerCache) fetchTickerNews(); }, 1500);
 document.getElementById('metrics-close').addEventListener('click', () => {
   metricsPanel.classList.remove('open'); metricsBtn.classList.remove('active');
 });
@@ -1677,6 +1889,39 @@ function buildCportsMarkers() {
         </div>`;
     }
 
+    // Evidence links for KF#3 named sites
+    const EVIDENCE_DB = {
+      'Djibouti': {
+        url: 'https://www.csis.org/analysis/chinas-overseas-bases-and-access-points',
+        label: '🔎 DoD/CSIS: PLA Logistics Facilities Assessment 2024'
+      },
+      'Gwadar': {
+        url: 'https://www.csis.org/analysis/pakistans-gwadar-port-new-naval-base-chinas-string-pearls-indo-pacific',
+        label: '🔎 CSIS: Gwadar — Strategic Strongpoint Analysis'
+      },
+      'Hambantota': {
+        url: 'https://www.scmp.com/news/china/diplomacy/article/3190320/chinas-dual-use-surveillance-ship-sri-lankan-port-underscores',
+        label: '🔎 SCMP: PLA Yuan Wang 5 Dual-Use Spy Ship at Hambantota'
+      },
+      'Chancay': {
+        url: 'https://thediplomat.com/2025/12/chinas-military-is-planning-for-combat-in-latin-america/',
+        label: '🔎 The Diplomat: PLA Wargaming Latin America Operations 2026'
+      }
+    };
+    let evidenceHtml = '';
+    if (port.kf3_named) {
+      // Find evidence for this country
+      const ev = EVIDENCE_DB[port.country];
+      if (ev) {
+        evidenceHtml = `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,136,238,0.3);">
+          <a href="${ev.url}" target="_blank" rel="noopener"
+             style="color:#ff88ee;text-decoration:none;font-size:8px;letter-spacing:0.04em;">
+            ${ev.label}
+          </a>
+        </div>`;
+      }
+    }
+
     // Chinese entity
     let entityLine = '';
     if (port.owner) entityLine += `<div><span style="color:#4a7a9b;">CN Owner:</span> ${port.owner}</div>`;
@@ -1699,6 +1944,7 @@ function buildCportsMarkers() {
            style="color:#00d4ff;text-decoration:none;letter-spacing:0.04em;">
           📊 Source: AidData CPORTS v2.0
         </a>
+        ${evidenceHtml}
       </div>
     `, { maxWidth: 280 });
 
