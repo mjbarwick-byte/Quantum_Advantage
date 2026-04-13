@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>No Place to Hide — Full Report | Team Quantum Advantage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#04090f; --navy2:#070f1c; --navy3:#0a1628;
+  --border:#0e3a5c; --cyan:#00d4ff; --teal:#00ffcc;
+  --gold:#f0c040; --red:#ff4444; --amber:#ffb300; --green:#00ff96;
+  --purple:#9b59ff; --text:#c8dcea; --dim:#4a7a9b;
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --sidebar:280px; --topbar:56px;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--navy);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.7;overflow-x:hidden;}
+
+/* ── TOP NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--topbar);
+  background:rgba(4,9,15,0.95);border-bottom:1px solid var(--border);
+  backdrop-filter:blur(8px);display:flex;align-items:center;padding:0 24px;gap:20px;}
+.nav-logo{font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--cyan);text-decoration:none;white-space:nowrap;}
+.nav-links{display:flex;gap:24px;margin-left:auto;}
+.nav-links a{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);text-decoration:none;font-family:var(--mono);transition:color .2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--cyan);}
+.nav-search{display:flex;align-items:center;gap:8px;background:rgba(0,212,255,0.06);border:1px solid var(--border);border-radius:3px;padding:5px 10px;margin-left:12px;}
+.nav-search input{background:none;border:none;color:var(--text);font-family:var(--mono);font-size:10px;width:160px;outline:none;}
+.nav-search input::placeholder{color:var(--dim);}
+.search-icon{color:var(--dim);font-size:12px;}
+
+/* ── LAYOUT ── */
+.layout{display:flex;min-height:100vh;padding-top:var(--topbar);}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  position:fixed;top:var(--topbar);left:0;bottom:0;
+  width:var(--sidebar);
+  background:var(--navy2);border-right:1px solid var(--border);
+  overflow-y:auto;overflow-x:hidden;z-index:100;
+  padding:0 0 40px;
+}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);}
+
+.toc-header{
+  padding:16px 16px 12px;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.18em;
+  color:var(--dim);text-transform:uppercase;
+  border-bottom:1px solid var(--border);
+  background:var(--navy2);
+  position:sticky;top:0;z-index:10;
+}
+
+/* TOC sections */
+.toc-part{padding:8px 0 4px;}
+.toc-part-label{
+  padding:6px 16px;font-family:var(--mono);font-size:8px;
+  letter-spacing:0.18em;color:var(--purple);text-transform:uppercase;
+  display:block;
+}
+.toc-chapter{
+  padding:5px 14px 5px 16px;cursor:pointer;
+  font-family:var(--sans);font-size:12px;font-weight:600;
+  color:#a0c4d8;letter-spacing:0.02em;
+  display:flex;align-items:center;gap:6px;
+  transition:color .15s,background .15s;
+  border-left:2px solid transparent;
+  text-decoration:none;
+}
+.toc-chapter:hover,.toc-chapter.active{
+  color:var(--cyan);background:rgba(0,212,255,0.06);
+  border-left-color:var(--cyan);
+}
+.toc-item{
+  padding:4px 14px 4px 24px;cursor:pointer;
+  font-size:12px;color:var(--dim);
+  display:block;text-decoration:none;
+  transition:color .15s,background .15s;
+  border-left:2px solid transparent;
+  margin-left:0;
+}
+.toc-item:hover,.toc-item.active{
+  color:var(--text);background:rgba(0,212,255,0.04);
+  border-left-color:rgba(0,212,255,0.4);
+}
+
+/* SFAR list */
+.sfar-list{padding:0;list-style:none;}
+.toc-sfar{
+  position:relative;
+  padding:3px 14px 3px 32px;
+  font-size:11px;color:var(--dim);
+  cursor:pointer;
+  transition:color .15s,background .15s;
+  border-left:2px solid transparent;
+  line-height:1.4;
+}
+.toc-sfar:hover{
+  color:var(--text);background:rgba(0,212,255,0.04);
+  border-left-color:rgba(0,212,255,0.25);
+}
+.toc-sfar.active{color:var(--cyan);border-left-color:var(--cyan);background:rgba(0,212,255,0.06);}
+.toc-sfar-title{display:block;}
+.toc-author{font-size:9px;color:var(--dim);opacity:0.7;}
+
+/* Tooltip hover card */
+.sfar-tooltip{
+  display:none;
+  position:fixed;left:calc(var(--sidebar) + 8px);
+  background:#0a1628;border:1px solid var(--cyan);border-radius:4px;
+  padding:14px 16px;width:280px;z-index:500;
+  box-shadow:0 4px 24px rgba(0,0,0,0.6),0 0 16px rgba(0,212,255,0.1);
+  pointer-events:none;
+}
+.toc-sfar:hover .sfar-tooltip{display:block;}
+.tooltip-title{font-family:var(--sans);font-size:13px;font-weight:600;color:#d0e8f4;margin-bottom:6px;line-height:1.3;}
+.tooltip-author{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:0.08em;margin-bottom:2px;}
+.tooltip-wep{font-family:var(--mono);font-size:9px;color:var(--cyan);margin-bottom:8px;letter-spacing:0.06em;}
+.tooltip-summary{font-size:11px;color:var(--text);line-height:1.6;margin-bottom:8px;}
+.tooltip-status{font-size:9px;color:var(--amber);font-family:var(--mono);letter-spacing:0.06em;}
+
+/* Chapter collapsible */
+.chapter-toggle{cursor:pointer;user-select:none;}
+.chapter-toggle::before{content:'▾';font-size:9px;color:var(--dim);margin-right:4px;transition:transform .2s;display:inline-block;}
+.chapter-toggle.collapsed::before{transform:rotate(-90deg);}
+.sfar-list.hidden{display:none;}
+
+.toc-divider{height:1px;background:var(--border);margin:6px 16px;opacity:0.5;}
+
+/* ── MAIN CONTENT ── */
+.main{
+  margin-left:var(--sidebar);flex:1;
+  padding:0;min-height:100vh;
+}
+
+/* Cover */
+.report-cover{
+  min-height:60vh;
+  background:linear-gradient(135deg,rgba(0,212,255,0.06) 0%,rgba(155,89,255,0.04) 100%);
+  border-bottom:1px solid var(--border);
+  padding:60px 80px;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.cover-dist{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.18em;
+  color:var(--teal);text-transform:uppercase;margin-bottom:24px;
+}
+.cover-title{
+  font-family:var(--serif);font-size:clamp(36px,5vw,72px);
+  font-weight:900;color:#fff;line-height:1.0;margin-bottom:8px;
+}
+.cover-title em{font-style:italic;color:var(--cyan);}
+.cover-subtitle{
+  font-family:var(--sans);font-size:18px;color:var(--text);
+  font-weight:300;margin-bottom:40px;
+}
+.cover-meta{display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:600px;}
+.cover-meta-group{}
+.cover-meta-label{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;color:var(--dim);text-transform:uppercase;margin-bottom:6px;}
+.cover-meta-value{font-size:13px;color:var(--text);line-height:1.6;}
+
+/* Content sections */
+.report-section{
+  padding:60px 80px;
+  border-bottom:1px solid rgba(14,58,92,0.4);
+  scroll-margin-top:calc(var(--topbar) + 16px);
+}
+.report-section:last-child{border-bottom:none;}
+
+.section-kicker{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.2em;
+  color:var(--dim);text-transform:uppercase;margin-bottom:12px;
+  display:flex;align-items:center;gap:10px;
+}
+.section-kicker.kf1{color:var(--cyan);}
+.section-kicker.kf2{color:var(--teal);}
+.section-kicker.kf3{color:var(--red);}
+.section-kicker.kf4{color:var(--gold);}
+.section-kicker::before{content:'';display:block;width:24px;height:1px;background:currentColor;}
+
+.report-section h2{
+  font-family:var(--serif);font-size:clamp(24px,3vw,38px);
+  font-weight:700;color:#fff;line-height:1.2;margin-bottom:32px;
+}
+.report-section h3.subsection{
+  font-family:var(--sans);font-size:15px;font-weight:600;
+  color:#a0c4d8;margin:28px 0 12px;
+  padding-bottom:6px;border-bottom:1px solid rgba(14,58,92,0.5);
+  letter-spacing:0.02em;
+}
+.report-section p{
+  font-size:15px;color:var(--text);line-height:1.85;margin-bottom:1.1em;
+  max-width:72ch;
+}
+.report-section ul{
+  margin:0 0 1.2em 1.5em;
+}
+.report-section ul li{
+  font-size:15px;color:var(--text);line-height:1.75;margin-bottom:0.4em;
+}
+.table-note{
+  font-family:var(--mono);font-size:11px;color:var(--dim);
+  margin:8px 0 20px;letter-spacing:0.04em;
+}
+
+/* WEP table */
+.wep-table{width:100%;border-collapse:collapse;margin:24px 0;font-size:12px;}
+.wep-table th{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.14em;
+  color:var(--dim);text-transform:uppercase;
+  padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;
+}
+.wep-table td{padding:8px 12px;border-bottom:1px solid rgba(14,58,92,0.3);}
+.wep-table tr:hover td{background:rgba(0,212,255,0.03);}
+
+/* Chapter headers */
+.chapter-section{
+  padding:40px 80px 20px;
+  background:linear-gradient(180deg,rgba(0,0,0,0.2) 0%,transparent 100%);
+  border-bottom:1px solid var(--border);
+  scroll-margin-top:calc(var(--topbar) + 16px);
+}
+.chapter-num{
+  font-family:var(--serif);font-size:80px;font-weight:900;
+  color:var(--cyan);opacity:0.08;line-height:1;margin-bottom:-20px;
+  user-select:none;
+}
+.chapter-title{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.18em;
+  color:var(--cyan);text-transform:uppercase;margin-bottom:8px;
+}
+.chapter-headline{
+  font-family:var(--serif);font-size:clamp(20px,2.5vw,32px);
+  font-weight:700;color:#fff;line-height:1.25;
+}
+
+/* SFAR placeholder cards */
+.sfar-placeholder{
+  margin:24px 80px;
+  background:var(--navy3);border:1px solid var(--border);border-radius:4px;
+  overflow:hidden;
+  scroll-margin-top:calc(var(--topbar) + 16px);
+}
+.sfar-header{
+  padding:20px 24px;
+  border-bottom:1px solid var(--border);
+}
+.sfar-kicker{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.18em;
+  color:var(--purple);text-transform:uppercase;margin-bottom:8px;
+}
+.sfar-title{
+  font-family:var(--sans);font-size:16px;font-weight:600;
+  color:#d0e8f4;margin-bottom:10px;line-height:1.3;
+}
+.sfar-meta{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.sfar-author{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:0.06em;}
+.sfar-wep-badge{
+  font-family:var(--mono);font-size:9px;padding:2px 8px;
+  border-radius:2px;border:1px solid rgba(0,212,255,0.4);
+  color:var(--cyan);background:rgba(0,212,255,0.08);letter-spacing:0.06em;
+}
+.sfar-summary{font-size:13px;color:var(--text);line-height:1.6;}
+.sfar-pending{
+  padding:20px 24px;
+  display:flex;align-items:center;gap:16px;
+  background:rgba(0,0,0,0.2);
+}
+.pending-icon{font-size:24px;opacity:0.4;}
+.pending-text{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:0.08em;}
+.pending-sub{font-size:11px;color:var(--dim);opacity:0.6;margin-top:2px;}
+
+/* Search highlight */
+.highlight{background:rgba(255,179,0,0.3);border-radius:2px;}
+
+/* Active section marker */
+.section-active-marker{
+  position:absolute;left:-4px;top:0;bottom:0;width:3px;
+  background:var(--cyan);border-radius:2px;
+}
+
+/* Responsive */
+@media(max-width:900px){
+  :root{--sidebar:0px;}
+  .sidebar{transform:translateX(-100%);}
+  .report-cover,.report-section{padding:40px 24px;}
+  .chapter-section{padding:32px 24px 16px;}
+  .sfar-placeholder{margin:16px 24px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="index.html">← Quantum Advantage</a>
+  <div class="nav-links">
+    <a href="index.html">Key Findings</a>
+    <a href="map.html">Live Map</a>
+    <a href="reports.html" class="active">Full Report</a>
+  </div>
+  <div class="nav-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search-input" placeholder="Search report..." autocomplete="off"/>
+  </div>
+</nav>
+
+<div class="layout">
+
+<!-- SIDEBAR TOC -->
+<aside class="sidebar" id="sidebar">
+  <div class="toc-header">📋 Table of Contents</div>
+
+  <!-- Cover / Front Matter -->
+  <div class="toc-part">
+    <a class="toc-chapter" href="#cover">No Place to Hide</a>
+    <a class="toc-item" href="#about">About This Document</a>
+    <a class="toc-item" href="#key-findings-overview">Key Findings Overview</a>
+  </div>
+  <div class="toc-divider"></div>
+
+  <!-- Part II -->
+  <div class="toc-part">
+    <span class="toc-part-label">Part II — Analytic Chapters</span>
+
+    <a class="toc-chapter chapter-toggle" href="#ch1">Chapter 1 — US-PRC Competition</a>
+    <a class="toc-item" href="#ch1-main">US Likely to Maintain Lead</a>
+    <ul class="sfar-list" id="ch1-sfars">
+      
+        <li class="toc-sfar" data-target="sfar-china-roughly-even-chance-to-surpass">
+          <span class="toc-sfar-title">China Roughly Even Chance to Surpass</span>
+          <span class="toc-author">— Kaminski</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">China Roughly Even Chance to Surpass</div>
+            <div class="tooltip-author">Author: Kaminski</div>
+            <div class="tooltip-wep">WEP: 55%</div>
+            <div class="tooltip-summary">Assesses the probability that China closes the US quantum sensing gap by 2035 through centralized investment and civil-military fusion.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-quantum-ew-hardening-gap">
+          <span class="toc-sfar-title">Quantum EW Hardening Gap</span>
+          <span class="toc-author">— Kaminski</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Quantum EW Hardening Gap</div>
+            <div class="tooltip-author">Author: Kaminski</div>
+            <div class="tooltip-wep">WEP: 20–45%</div>
+            <div class="tooltip-summary">Evaluates the likelihood that the US closes the adversarial electromagnetic disruption vulnerability for fielded quantum sensors before 2035.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-prc-centralized-innovation-model">
+          <span class="toc-sfar-title">PRC Centralized Innovation Model</span>
+          <span class="toc-author">— Kaminski</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">PRC Centralized Innovation Model</div>
+            <div class="tooltip-author">Author: Kaminski</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Analyzes how China&#39;s state-directed research model accelerates narrow-domain sensing advances while limiting cross-domain integration.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-adversarial-ew-shift">
+          <span class="toc-sfar-title">Adversarial EW Shift</span>
+          <span class="toc-author">— Kaminski</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Adversarial EW Shift</div>
+            <div class="tooltip-author">Author: Kaminski</div>
+            <div class="tooltip-wep">WEP: 80–95%</div>
+            <div class="tooltip-summary">Assesses the very likely shift from brute-force jamming toward precision counter-quantum electronic warfare targeting atomic coherence.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-adversary-countermeasures">
+          <span class="toc-sfar-title">Adversary Countermeasures</span>
+          <span class="toc-author">— Dunlap</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Adversary Countermeasures</div>
+            <div class="tooltip-author">Author: Dunlap</div>
+            <div class="tooltip-wep">WEP: 20–45%</div>
+            <div class="tooltip-summary">Evaluates whether quantum sensing countermeasures are likely to field before 2035, finding they are unlikely due to physics and acquisition timelines.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-us-quantum-sensing-lead">
+          <span class="toc-sfar-title">US Quantum Sensing Lead</span>
+          <span class="toc-author">— Barwick</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">US Quantum Sensing Lead</div>
+            <div class="tooltip-author">Author: Barwick</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Assesses the US likely maintaining its aggregate quantum sensing advantage through 2035 based on investment, academic base, and defense lab network.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+    </ul>
+    <div class="toc-divider"></div>
+
+    <a class="toc-chapter chapter-toggle" href="#ch2">Chapter 2 — Technology Triage</a>
+    <a class="toc-item" href="#ch2-main">Q-PNT, RYDAR & Gravimetry</a>
+    <ul class="sfar-list" id="ch2-sfars">
+      
+        <li class="toc-sfar" data-target="sfar-gps-independent-navigation">
+          <span class="toc-sfar-title">GPS-Independent Navigation</span>
+          <span class="toc-author">— Dunlap</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">GPS-Independent Navigation</div>
+            <div class="tooltip-author">Author: Dunlap</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Evaluates quantum PNT deployment on P-8A, B-21, and MQ-4C platforms for GPS-denied environments by 2029–2035.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-quantum-radar">
+          <span class="toc-sfar-title">Quantum Radar</span>
+          <span class="toc-author">— Barwick</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Quantum Radar</div>
+            <div class="tooltip-author">Author: Barwick</div>
+            <div class="tooltip-wep">WEP: 20–45%</div>
+            <div class="tooltip-summary">Assesses quantum radar as unlikely to provide militarily significant detection advantage due to physics-bound ~11km range limitation.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-quantum-lidar">
+          <span class="toc-sfar-title">Quantum LiDAR</span>
+          <span class="toc-author">— Seitz</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Quantum LiDAR</div>
+            <div class="tooltip-author">Author: Seitz</div>
+            <div class="tooltip-wep">WEP: 20–45%</div>
+            <div class="tooltip-summary">Evaluates quantum LiDAR as unlikely to achieve operational utility by 2035 due to photon loss, range limits, and system complexity.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-airborne-asw-magnetometry">
+          <span class="toc-sfar-title">Airborne ASW Magnetometry</span>
+          <span class="toc-author">— Dunlap</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Airborne ASW Magnetometry</div>
+            <div class="tooltip-author">Author: Dunlap</div>
+            <div class="tooltip-wep">WEP: 20–45%</div>
+            <div class="tooltip-summary">Assesses airborne quantum magnetometry as unlikely for widespread littoral ASW detection due to environmental noise overwhelming submarine signatures.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-quantum-clocks-pnt-advantage">
+          <span class="toc-sfar-title">Quantum Clocks PNT Advantage</span>
+          <span class="toc-author">— Barwick</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Quantum Clocks PNT Advantage</div>
+            <div class="tooltip-author">Author: Barwick</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Evaluates quantum atomic clocks providing US timing advantage for PNT and SIGINT applications, with AUKUS trilateral deployment confirmed.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-quantum-gps-aerospace-integration">
+          <span class="toc-sfar-title">Quantum GPS Aerospace Integration</span>
+          <span class="toc-author">— Seitz</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Quantum GPS Aerospace Integration</div>
+            <div class="tooltip-author">Author: Seitz</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Assesses integration of quantum PNT into aerospace platforms and the interoperability challenges with existing GPS-dependent architectures.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-airborne-quantum-sensing">
+          <span class="toc-sfar-title">Airborne Quantum Sensing</span>
+          <span class="toc-author">— Dunlap</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Airborne Quantum Sensing</div>
+            <div class="tooltip-author">Author: Dunlap</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Evaluates which airborne platforms can accommodate quantum sensing payloads given SWaP-C constraints through 2035.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-solid-state-quantum-sensing">
+          <span class="toc-sfar-title">Solid-State Quantum Sensing</span>
+          <span class="toc-author">— Dunlap</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Solid-State Quantum Sensing</div>
+            <div class="tooltip-author">Author: Dunlap</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Assesses NV diamond and silicon carbide defect sensors as the most viable near-term pathway due to CMOS compatibility and room-temperature operation.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-wideband-quantum-rf-receivers">
+          <span class="toc-sfar-title">Wideband Quantum RF Receivers</span>
+          <span class="toc-author">— Kaminski</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Wideband Quantum RF Receivers</div>
+            <div class="tooltip-author">Author: Kaminski</div>
+            <div class="tooltip-wep">WEP: 80–95%</div>
+            <div class="tooltip-summary">Evaluates Rydberg-atom receivers (RYDAR) as very likely to achieve fixed-site IOC by 2035, detecting signals below classical receiver noise floors.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-environmental-noise">
+          <span class="toc-sfar-title">Environmental Noise</span>
+          <span class="toc-author">— Kaminski</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Environmental Noise</div>
+            <div class="tooltip-author">Author: Kaminski</div>
+            <div class="tooltip-wep">WEP: 80–95%</div>
+            <div class="tooltip-summary">Assesses environmental magnetic and vibrational noise as very likely to confine quantum sensing deployment to fixed sites and strategic platforms through 2035.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-quantum-sigint">
+          <span class="toc-sfar-title">Quantum SIGINT</span>
+          <span class="toc-author">— Sye</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Quantum SIGINT</div>
+            <div class="tooltip-author">Author: Sye</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Evaluates RYDAR collection advantage against PRC low-probability-of-intercept waveforms and frequency-hopping tactical data links.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-prc-submarine-and-gps-threat">
+          <span class="toc-sfar-title">PRC Submarine and GPS Threat</span>
+          <span class="toc-author">— Barwick</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">PRC Submarine and GPS Threat</div>
+            <div class="tooltip-author">Author: Barwick</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Assesses China&#39;s quantum inertial navigation creating GPS-denial asymmetry — enabling PRC operations in conditions it may itself create through jamming.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+    </ul>
+    <div class="toc-divider"></div>
+
+    <a class="toc-chapter chapter-toggle" href="#ch3">Chapter 3 — BRI Dual-Use</a>
+    <a class="toc-item" href="#ch3-main">I&W Gap Analysis</a>
+    <ul class="sfar-list" id="ch3-sfars">
+      
+        <li class="toc-sfar" data-target="sfar-prc-bri-quantum-sensing">
+          <span class="toc-sfar-title">PRC BRI Quantum Sensing</span>
+          <span class="toc-author">— Sye</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">PRC BRI Quantum Sensing</div>
+            <div class="tooltip-author">Author: Sye</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Evaluates the 40+ PRC-operated port facilities as stable sensing platforms operating under civilian attribution outside Joint Force I&amp;W frameworks.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-quantum-gravimetry-africa">
+          <span class="toc-sfar-title">Quantum Gravimetry Africa</span>
+          <span class="toc-author">— Sye</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Quantum Gravimetry Africa</div>
+            <div class="tooltip-author">Author: Sye</div>
+            <div class="tooltip-wep">WEP: 80–95%</div>
+            <div class="tooltip-summary">Assesses PRC passive gravimetry at African mining and port installations as very likely to compromise subterranean concealment in African operating environments.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-prc-quantum-operationalization">
+          <span class="toc-sfar-title">PRC Quantum Operationalization</span>
+          <span class="toc-author">— Seitz</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">PRC Quantum Operationalization</div>
+            <div class="tooltip-author">Author: Seitz</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Evaluates PRC timeline for transitioning quantum sensing from laboratory to operational deployment across BRI infrastructure by 2035.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-prc-quantum-operational-risk">
+          <span class="toc-sfar-title">PRC Quantum Operational Risk</span>
+          <span class="toc-author">— Sye</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">PRC Quantum Operational Risk</div>
+            <div class="tooltip-author">Author: Sye</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Assesses the operational risk to Joint Force subterranean operations, maritime maneuver, and GPS-dependent logistics from PRC quantum sensing.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+    </ul>
+    <div class="toc-divider"></div>
+
+    <a class="toc-chapter chapter-toggle" href="#ch4">Chapter 4 — Ecosystem Integration</a>
+    <a class="toc-item" href="#ch4-main">Integration Chain</a>
+    <ul class="sfar-list" id="ch4-sfars">
+      
+        <li class="toc-sfar" data-target="sfar-prc-supply-chain-gap">
+          <span class="toc-sfar-title">PRC Supply Chain Gap</span>
+          <span class="toc-author">— Barwick</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">PRC Supply Chain Gap</div>
+            <div class="tooltip-author">Author: Barwick</div>
+            <div class="tooltip-wep">WEP: 20–45%</div>
+            <div class="tooltip-summary">Evaluates whether China&#39;s supply chain for quantum sensing components contains exploitable vulnerabilities that could constrain fielding timelines.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-quantum-sensor-producibility">
+          <span class="toc-sfar-title">Quantum Sensor Producibility</span>
+          <span class="toc-author">— Seitz</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Quantum Sensor Producibility</div>
+            <div class="tooltip-author">Author: Seitz</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Assesses manufacturing readiness for quantum sensing components and the CMOS compatibility pathway that separates fieldable from laboratory systems.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-quantum-swap-improvements">
+          <span class="toc-sfar-title">Quantum SWaP Improvements</span>
+          <span class="toc-author">— Seitz</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Quantum SWaP Improvements</div>
+            <div class="tooltip-author">Author: Seitz</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Evaluates size, weight, power, and cost reduction trajectories for quantum sensing systems and the implications for platform integration by 2035.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-silicon-28-and-cmos-manufacturing">
+          <span class="toc-sfar-title">Silicon-28 and CMOS Manufacturing</span>
+          <span class="toc-author">— Dunlap</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Silicon-28 and CMOS Manufacturing</div>
+            <div class="tooltip-author">Author: Dunlap</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Assesses silicon-28 isotopic enrichment and CMOS fabrication as the critical manufacturing bottleneck for solid-state quantum sensor production.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-helium-supply-chain">
+          <span class="toc-sfar-title">Helium Supply Chain</span>
+          <span class="toc-author">— Barwick</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Helium Supply Chain</div>
+            <div class="tooltip-author">Author: Barwick</div>
+            <div class="tooltip-wep">WEP: 20–45%</div>
+            <div class="tooltip-summary">Evaluates helium supply chain constraints on SQUID sensor fielding, finding helium is unlikely to be the binding constraint by 2035.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-quantum-operator-training">
+          <span class="toc-sfar-title">Quantum Operator Training</span>
+          <span class="toc-author">— Seitz</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Quantum Operator Training</div>
+            <div class="tooltip-author">Author: Seitz</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Assesses the workforce pipeline for strategic-platform quantum operators and the gap in tactical-level training pathways.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-quantum-workforce-pipeline">
+          <span class="toc-sfar-title">Quantum Workforce Pipeline</span>
+          <span class="toc-author">— Sye</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Quantum Workforce Pipeline</div>
+            <div class="tooltip-author">Author: Sye</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Evaluates the structural workforce deficit created by the absence of a quantum sensing MOS and DoW career field by 2035.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-joint-quantum-data-sharing">
+          <span class="toc-sfar-title">Joint Quantum Data Sharing</span>
+          <span class="toc-author">— Sye</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Joint Quantum Data Sharing</div>
+            <div class="tooltip-author">Author: Sye</div>
+            <div class="tooltip-wep">WEP: 20–45%</div>
+            <div class="tooltip-summary">Assesses CJADC2 data fusion readiness for quantum sensor outputs, finding cross-domain data sharing unlikely by 2035 despite $1.4B investment.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-quantum-doctrine-adaptation">
+          <span class="toc-sfar-title">Quantum Doctrine Adaptation</span>
+          <span class="toc-author">— Sye</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Quantum Doctrine Adaptation</div>
+            <div class="tooltip-author">Author: Sye</div>
+            <div class="tooltip-wep">WEP: 45–55%</div>
+            <div class="tooltip-summary">Evaluates whether Joint Force doctrine can adapt to quantum sensing environments within platform acquisition timelines averaging 12 years.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+
+        <li class="toc-sfar" data-target="sfar-quantum-convergence-and-autonomous-warfi">
+          <span class="toc-sfar-title">Quantum Convergence and Autonomous Warfighting</span>
+          <span class="toc-author">— Kaminski</span>
+          <div class="sfar-tooltip">
+            <div class="tooltip-title">Quantum Convergence and Autonomous Warfighting</div>
+            <div class="tooltip-author">Author: Kaminski</div>
+            <div class="tooltip-wep">WEP: 55–80%</div>
+            <div class="tooltip-summary">Assesses the convergence of quantum sensing, computing, and AI as likely to enable autonomous warfighting capabilities by 2036.</div>
+            <div class="tooltip-status">📄 Full text pending</div>
+          </div>
+        </li>
+    </ul>
+    <div class="toc-divider"></div>
+
+    <a class="toc-item" href="#beyond">Beyond 2035</a>
+  </div>
+
+  <div class="toc-divider"></div>
+
+  <!-- Annexes -->
+  <div class="toc-part">
+    <span class="toc-part-label">Part III — Annexes</span>
+    <a class="toc-item" href="#annex-a">Annex A — Terms of Reference</a>
+    <a class="toc-item" href="#annex-b">Annex B — ICD-203 WEP Standards</a>
+    <a class="toc-item" href="#annex-c">Annex C — Source Credibility Scale</a>
+    <a class="toc-item" href="#annex-d">Annex D — Analytic Confidence</a>
+    <a class="toc-item" href="#annex-e">Annex E — Quantum Sensing Glossary</a>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main" id="main-content">
+
+  <!-- Cover -->
+  <section class="report-cover" id="cover">
+    <div class="cover-dist">Distribution Statement A — Approved for Public Release — Distribution is Unlimited</div>
+    <div class="cover-title">No Place<br>to <em>Hide</em></div>
+    <div class="cover-subtitle">The Quantum Advantage: U.S.–PRC Quantum Sensing Competition Through 2035</div>
+    <div class="cover-meta">
+      <div class="cover-meta-group">
+        <div class="cover-meta-label">Written By</div>
+        <div class="cover-meta-value">
+          COL Joseph M. Kaminski<br>
+          COL John D. Seitz<br>
+          LTC Matt J. Barwick<br>
+          LTC Tanner M. Dunlap<br>
+          LTC James C. Sye
+        </div>
+      </div>
+      <div class="cover-meta-group">
+        <div class="cover-meta-label">Under the Direction of</div>
+        <div class="cover-meta-value">Professor Matt S. Rasmussen<br>United States Army War College<br>May 2026</div>
+        <div class="cover-meta-label" style="margin-top:16px;">Prepared For</div>
+        <div class="cover-meta-value">MG Rhett R. Cox<br><span style="font-size:12px;opacity:0.7;">on behalf of LTG Michelle A. Schmidt, Army G2</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="report-section" id="about">
+    <div class="section-kicker">Front Matter</div>
+    <h2>About This Document</h2>
+    <h3 class="subsection">Team and Process</h3>
+<p>The Quantum Advantage research team produced this collective strategic research project as one of the prerequisites for completing the Master of Strategic Studies program at the United States Army War College (USAWC). Research, analysis, and production occurred over eight months, from October 2025 through May 2026, as part of the in-residence USAWC Senior Service College program for Academic Year 2026.</p>
+<p>This briefing book is available in both electronic (PDF) and hard-copy formats. The electronic version is the primary version, as all hyperlinks are active. Final deliverables include this digital PDF, a soft-bound hard-copy book, and a companion PowerPoint presentation addressing the Terms of Reference questions in sequence.</p>
+<h3 class="subsection">Requirement</h3>
+<p>This report answers strategic questions posed by Major General Rhett R. Cox, Deputy on behalf of Lieutenant General Michelle A. Schmidt, Army G2, in accordance with the project Terms of Reference (see Annex A).</p>
+<h3 class="subsection">The primary research question is:</h3>
+<p>What are the likely quantum sensing technologies that will shape the strategic operating environment between the United States and the People’s Republic of China (PRC) by 2035?</p>
+<h3 class="subsection">The Terms of Reference further direct the team to answer the following subordinate questions:</h3>
+<p>• What are the likely drivers of quantum sensing development by the PRC and the United States?</p>
+<p>• How likely are the United States and the PRC to operationalize quantum sensing technologies?</p>
+<p>• Which developing quantum technologies are likely to yield a military or intelligence surprise for the Army by 2035?</p>
+<p>• Which developing quantum sensing technologies are most likely to confer a meaningful military or intelligence advantage for the Army by 2035?</p>
+<p>The team synthesized and analyzed open-source documents, interviews with subject matter experts, and academic and government publications to produce key findings on quantum sensing competition and its implications for U.S. Army intelligence priorities. The complete Terms of Reference are reproduced in Annex A.</p>
+<h3 class="subsection">Words of Estimative Probability</h3>
+<p>This report applies Intelligence Community Directive (ICD) 203 Words of Estimative Probability (WEP) standards to express the likelihood of analytic judgments. WEPs appear at first use with percentage anchoring (e.g., "likely [55-80%]") so that readers understand the precise probability range associated with each assessment. Table 1 provides the complete ICD-203 WEP reference.</p>
+<p>------------------ ------------------- ------------------------- --------------------- --------------------- ----------------- --------------------   Almost No Chance   Very Unlikely       Unlikely                  Roughly Even Chance   Likely                Very Likely       Almost Certain(ly)</p>
+<p>Remote             Highly Improbable   Improbable (Improbably)   Roughly Even Odds     Probable (Probably)   Highly Probable   Nearly Certain</p>
+<p>01-05%             05-20%              20-45%                    45-55%                55-80%                80-95%            95-99%   ------------------ ------------------- ------------------------- --------------------- --------------------- ----------------- --------------------</p>
+<h3 class="subsection">Table 1. ICD-203 Words of Estimative Probability</h3>
+<h3 class="subsection">Source Reliability</h3>
+<p>Source reliability is annotated throughout this report as High (H), Moderate (M), or Low (L) at the point of each citation. In the electronic version, reliability annotations hyperlink directly to the primary source. Source reliability was determined using the Standard Primary Source Credibility Scale (see Annex B) and the Trust Scale and Website Evaluation Worksheet (see Annex C). Sourced figures and photographs are also hyperlinked to their original source.</p>
+<p>All analytic content, WEPs, and factual claims are traceable to source material in the Combined Individual Analytic Reports, which serve as the source of truth for this product. No fabricated or unverifiable citations appear in any section.</p>
+<h3 class="subsection">Analytic Confidence</h3>
+<p>The overall analytic confidence of this report is moderate. The questions posed were complex, and the team had sufficient time to conduct structured, corroborated research. Source reliability ranged from moderate to high across the analytic base. Team members worked both individually and collectively to evaluate evidence bearing on the assessment questions.</p>
+<p>The team employed a combination of structured analytic techniques, including the Nominal Group Technique, Multi-Criteria Decision-Making Process, and the Millhone Method. Analytic confidence was evaluated against Analytic Confidence Factors (see Annex D). Individual analytic chapters and short-form analytic reports carry their own stated confidence levels, where those levels differ from this overall assessment.</p>
+<p>This report relies exclusively on unclassified, open-source information. Access to the classified collection would alter some assessments. The forecasting horizon through 2040 introduces inherent uncertainty; the team applied compounding-gaps systemic judgment where near-term trend lines were insufficient to anchor longer-range projections.</p>
+<h3 class="subsection">Contact</h3>
+<p>For a copy of this product or inquiries regarding the research, please contact the United States Army War College, Department of National Security and Strategy, Carlisle Barracks, Pennsylvania 17013. The companion presentation, which addresses the Terms of Reference questions in sequence with the key findings, is available upon request.</p>
+  </section>
+
+  <!-- Key Findings Overview -->
+  <section class="report-section" id="key-findings-overview">
+    <div class="section-kicker">Executive Summary</div>
+    <h2>Key Findings</h2>
+    <p>By 2035, the United States and the People’s Republic of China are likely (55–80%) to compete in a strategic environment in which quantum sensing is likely to change the character of war by reducing the effectiveness of concealment. Quantum sensing is likely to make previously undetectable signals and structures visible to both US and PRC collection enterprises. This change is likely to undermine stealth, subterranean concealment, and low-observable operations. The decisive variable in this competition is unlikely to be who invents the most sensitive sensor. The actor that first fields a complete quantum sensing ecosystem is likely to gain a decisive advantage, even if the competitor retains superior laboratory performance.</p>
+<p>Quantum advantage is likely to go to the actor that commits to promising technologies, avoids the implausible ones, and best integrates the complete quantum ecosystem across workforce, manufacturing, data fusion, and fielding pipelines. The four key findings that follow describe how the US–PRC quantum sensing competition is likely to unfold by 2035 and identify where advantage is likely to be gained or lost.</p>
+<p>The United States is likely to maintain its aggregate quantum sensing lead through 2035, but only narrowly, as the PRC narrows the gap through centralized investments, specific mission focus, and manufacturing scale. Key Finding #1 examines the competitive dynamics, countermeasure asymmetries, and the relative strengths and constraints shaping US and PRC fielding timelines.</p>
+<p>Only a subset of quantum sensing technologies are likely to reach operational capability by 2035. Quantum PNT, Rydberg-atom receivers (RYDAR), and quantum gravimetry are likely to field on strategic platforms and fixed sites, while other widely discussed technologies remain constrained by binding physics limitations regardless of investment. Key Finding #2 separates the fieldable from the infeasible and clarifies where US and PRC development trajectories diverge.</p>
+<p>The most consequential source of strategic surprise is likely to emerge not from a single technology, but from how sensing capability is deployed. PRC dual-use quantum sensing at Belt and Road facilities is likely to produce strategic surprise by operating outside Joint Force indications-and-warning frameworks, while US RYDAR provides a likely but temporary and conditional collection advantage. Key Finding #3 explains this asymmetry and the resulting warning-window problem.</p>
+<p>Ecosystem integration, not laboratory sensitivity, is likely to determine which actor realizes operational advantage. One enabling manufacturing pathway and four integration barriers (ruggedization, manufacturing scale, data fusion, and workforce) are likely to determine whether quantum sensing transitions from laboratory capability to fielded military effects. The barriers compound, and partial progress is unlikely (20–45%) to be sufficient. Key Finding #4 traces this integration chain and explains why the actor that resolves it first is likely to gain a decisive advantage.</p>
+  </section>
+
+  <!-- Chapter 1 -->
+  <div class="chapter-section" id="ch1">
+    <div class="chapter-num">1</div>
+    <div class="chapter-title">Chapter 1</div>
+    <div class="chapter-headline">United States Likely to Maintain Quantum Sensing Lead Through 2035 as PRC Generates Localized Surprise in Specific Mission Areas</div>
+  </div>
+  <section class="report-section" id="ch1-main">
+    <div class="section-kicker kf1">Key Finding #1 · Likely 55–80%</div>
+    <h2>US–PRC Competitive Dynamics</h2>
+    <p>United States Likely to Maintain Quantum Sensing Lead Through 2035 as PRC Generates Localized Surprise in Specific Mission Areas</p>
+<p>By 2035, the US-PRC quantum sensing competition is likely to shift from a measure-countermeasure cycle toward an asymmetrical acquisition race, in which advantage accrues to the actor that first fields operational capability rather than the actor with superior laboratory performance. The United States is likely to maintain its aggregate quantum sensing lead through this period, and the PRC is unlikely to close the operational capability gap.</p>
+<p>Quantum sensing is likely to disrupt the traditional measure-countermeasure cycle in two ways. First, passive quantum collection emits no signal, preventing the target from recognizing that collection is occurring and delaying countermeasure development. Second, even once identified, hardening against quantum sensing is unlikely to deliver fielded capability before 2035 due to acquisition timelines and unresolved physics constraints. The actor that fields first is therefore likely to retain advantage for the duration of this gap.</p>
+<p>The United States retains the broader quantum ecosystem advantage, including ten times higher private capital investment, a deeper academic base, and a mature defense laboratory network. The PRC’s civil-military fusion model partially offsets this aggregate disadvantage by directly channeling university graduates into military quantum roles, bypassing the 6-to-18-month security clearance timelines and commercial salary competition that bleed the US defense talent pool. US academic programs overwhelmingly prioritize quantum computing over the distinct atomic physics and metrology skills that quantum sensing demands. The PRC is likely to field qualified strategic-platform operators faster than the United States in the near term, but the United States retains the broader ecosystem advantage.</p>
+<p>Rather than benefiting from seamless cross-domain spillover, the PRC is more likely to offset parts of its broader disadvantage through centralized industrial policy, deliberate state concentration in selected sensing applications, and semiconductor manufacturing scale that supports production of solid-state sensor components. This approach is likely to accelerate development in narrower mission areas such as inertial navigation and magnetometry, even if fragmentation across institutes and stovepiped research limits the efficiency of broader system-wide integration. The open-source figure for direct PRC quantum sensing investment likely understates effective PRC sensing capacity by an undetermined margin, but concentrated state prioritization is unlikely to eliminate the wider US advantage in capital depth, research diversity, and defense laboratory infrastructure.</p>
+<p>PRC precision counter-quantum electronic warfare (EW) capabilities have a roughly even chance (45–55%) of becoming operational before 2035, and PRC quantum sensing research is very likely (80–95%) to encompass awareness of US sensor vulnerabilities as a logical precursor to precision disruption targeting. Quantum sensors fail completely when their atomic coherence is disrupted by targeted electromagnetic interference, rather than degrading like classical systems. DARPA’s Robust Quantum Sensors (RoQS) program improves resilience to environmental noise, but no current US program addresses deliberate electromagnetic disruption of quantum sensors. Department of War acquisition timelines averaging almost 12 years from program start to initial capability foreclose any new program start from delivering hardened sensors before 2035.</p>
+<p>Quantum sensors are likely to generate data volumes that exceed human processing capacity, making AI-enabled data triage very likely to become operationally necessary by 2035. This shift is likely to compress sensor-to-shooter timelines on strategic platforms operating in GPS-denied environments. Without integration into decision-making architectures, however, these gains are unlikely to translate into operational advantage, reinforcing the data fusion challenges described in Key Finding #4.</p>
+<p>PRC quantum sensors are likely to mature within the 2030 to 2035 timeframe, while Department of War acquisition timelines limit the Joint Force’s ability to adapt platforms within the same period. The United States has a roughly even chance (45–55%) of adapting Joint Force platforms to the quantum-sensing environment by 2035, creating a window in which existing concealment assumptions for stealth aircraft and submarines are likely to erode before countermeasures are fielded.</p>
+<p>Allied quantum cooperation, particularly through AUKUS (Australia-United Kingdom-United States) Pillar II, is likely to accelerate specific fielding timelines. Australia successfully trialed quantum clocks under AUKUS in November 2025, and the United Kingdom completed the first test flight of a quantum navigation system. AUKUS export control alignment, finalized in August 2024, reduced historical International Traffic in Arms Regulations (ITAR) and Export Administration Regulations (EAR) constraints on quantum sensing component movement between allied foundries, partially mitigating supply chain fragility. Allied partnerships nonetheless cannot substitute for the four US-internal infrastructure barriers that determine whether US quantum sensing matures into fielded capability: environmental ruggedization, manufacturing scale, data fusion architecture, and workforce pipeline deficits.</p>
+  </section>
+  
+      <div class="sfar-placeholder" id="sfar-china-roughly-even-chance-to-surpass">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">China Roughly Even Chance to Surpass</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Kaminski</span>
+            <span class="sfar-wep-badge">55%</span>
+          </div>
+          <p class="sfar-summary">Assesses the probability that China closes the US quantum sensing gap by 2035 through centralized investment and civil-military fusion.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-quantum-ew-hardening-gap">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Quantum EW Hardening Gap</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Kaminski</span>
+            <span class="sfar-wep-badge">20–45%</span>
+          </div>
+          <p class="sfar-summary">Evaluates the likelihood that the US closes the adversarial electromagnetic disruption vulnerability for fielded quantum sensors before 2035.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-prc-centralized-innovation-model">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">PRC Centralized Innovation Model</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Kaminski</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Analyzes how China&#39;s state-directed research model accelerates narrow-domain sensing advances while limiting cross-domain integration.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-adversarial-ew-shift">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Adversarial EW Shift</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Kaminski</span>
+            <span class="sfar-wep-badge">80–95%</span>
+          </div>
+          <p class="sfar-summary">Assesses the very likely shift from brute-force jamming toward precision counter-quantum electronic warfare targeting atomic coherence.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-adversary-countermeasures">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Adversary Countermeasures</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Dunlap</span>
+            <span class="sfar-wep-badge">20–45%</span>
+          </div>
+          <p class="sfar-summary">Evaluates whether quantum sensing countermeasures are likely to field before 2035, finding they are unlikely due to physics and acquisition timelines.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-us-quantum-sensing-lead">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">US Quantum Sensing Lead</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Barwick</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Assesses the US likely maintaining its aggregate quantum sensing advantage through 2035 based on investment, academic base, and defense lab network.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+  <!-- Chapter 2 -->
+  <div class="chapter-section" id="ch2">
+    <div class="chapter-num">2</div>
+    <div class="chapter-title">Chapter 2</div>
+    <div class="chapter-headline">Q-PNT, RYDAR, and Gravimetry Likely Fielded by 2035; Four Quantum Sensors Remain Bounded by Physics</div>
+  </div>
+  <section class="report-section" id="ch2-main">
+    <div class="section-kicker kf2">Key Finding #2 · Very Likely 80–95%</div>
+    <h2>Quantum Technology Triage</h2>
+    <h3 class="subsection">Q-PNT, RYDAR, and Gravimetry Likely Fielded by 2035; Four Quantum Sensors Remain Bounded by Physics</h3>
+<p>Operational quantum sensing through 2035 is very likely (80–95%) to remain confined to strategic platforms and fixed sites. Ruggedization, manufacturing scale, and platform integration are the primary constraints preventing quantum sensors from transitioning to mobile or tactical platforms before 2035, as discussed in Key Finding #4. Table 2 summarizes the gap between common claims about quantum sensing and likely operational reality by 2035, distinguishing fieldable systems from those constrained by physics, environment, or scalability.</p>
+<h3 class="subsection">Three Likely Fielded Operational Quantum Sensors</h3>
+<p>Quantum PNT on platforms including the P-8A, B-21, and MQ-4C is likely to achieve limited deployment by 2029–2035, providing the Joint Force with collection capabilities in a GPS-denied environment. The PRC has demonstrated a cold-atom gyroscope aboard the China Space Station at Technology Readiness Level (TRL) 7, indicating parallel development on a compressed timeline. Due to mechanical vibration constraints, quantum PNT deployment on helicopters, ground vehicles, and tactical aircraft is likely to remain unreliable through the early 2030s, though selective deployment on strategic systems is likely.</p>
+<p>Rydberg-atom radio frequency receivers (RYDAR) at fixed signals intelligence (SIGINT) collection sites are very likely to achieve initial operational capability by 2035, providing collection against low-power and low-probability-of-intercept signals that classical receivers cannot detect. These systems are constrained to fixed sites due to sensitivity to vibration and environmental instability, making mobile deployment unlikely by 2035. Both the United States and the PRC are actively pursuing Rydberg-based RF sensing for narrow collection advantages, with the United States likely maintaining an early lead in deployment at fixed sites. This advantage is unlikely to remain uncontested. PRC adaptation is likely through waveform evolution, emission discipline, and the development of precision counter-quantum electronic warfare designed to disrupt atomic coherence. RYDAR therefore provides a likely but temporary and conditional advantage that depends on successful integration and persists only until PRC or other adversary adaptation reduces its effectiveness.</p>
+<p>PRC passive quantum gravimetry at dual-use commercial installations is very likely to compromise subterranean concealment in African operating environments by 2035, where mineral extraction infrastructure provides both the funding and stable conditions required for deployment. Expansion across the broader Belt and Road footprint is likely as PRC port and undersea cable facilities mature, though confidence in geographic scope outside Africa is lower due to limited independent confirmation. Passive gravimetry uses cold-atom interferometry to detect subsurface density anomalies without emitting signals, placing it outside current Joint Force SIGINT and electronic warfare (EW) detection frameworks. These systems are likely to improve PRC detection of underground voids, bunkers, and tunnel systems at depths beyond conventional ground-penetrating radar.</p>
+<h3 class="subsection">Four Unlikely Fielded Operational Quantum Sensors</h3>
+<p>The following four technologies remain unlikely to achieve operational relevance by 2035 due to binding physics constraints, environmental limitations, or the absence of a viable pathway to scalable deployment.</p>
+<p>Superconducting Quantum Interference Devices (SQUIDs) are unlikely to reach tactical fielding by 2035 due to persistent cryogenic requirements that limit deployment to fixed facilities and select large platforms. While they retain value for submarine detection and geophysical applications, these constraints preclude widespread tactical use. Solid-state nitrogen-vacancy (NV) diamond sensors represent a more viable pathway due to their ability to operate at room temperature and scale through complementary metal-oxide-semiconductor (CMOS)-compatible manufacturing.</p>
+<p>Quantum radar is unlikely to provide a militarily significant detection advantage by 2035 due to fundamental photon-attenuation limits that constrain range and scalability. These constraints are physics-bound and not resolvable through manufacturing improvements, as reflected in Figure 4.</p>
+<p>Quantum LiDAR is unlikely (20–45%) to reach operational utility by 2035 due to photon loss, limited range, and system complexity that constrain scalability beyond laboratory environments. Commercial integration is unlikely without direct government funding.</p>
+<p>Airborne anti-submarine warfare (ASW) quantum magnetometry is unlikely (20–45%) to achieve widespread operational detection of submerged submarines in littoral environments by 2035 due to environmental magnetic noise and clutter that overwhelm target signatures. While advances in AI-driven clutter rejection could alter this trajectory, such breakthroughs remain uncertain. Claims of operational capability are unlikely to reflect deployable systems given these persistent signal-to-noise limitations.</p>
+  </section>
+  
+      <div class="sfar-placeholder" id="sfar-gps-independent-navigation">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">GPS-Independent Navigation</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Dunlap</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Evaluates quantum PNT deployment on P-8A, B-21, and MQ-4C platforms for GPS-denied environments by 2029–2035.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-quantum-radar">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Quantum Radar</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Barwick</span>
+            <span class="sfar-wep-badge">20–45%</span>
+          </div>
+          <p class="sfar-summary">Assesses quantum radar as unlikely to provide militarily significant detection advantage due to physics-bound ~11km range limitation.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-quantum-lidar">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Quantum LiDAR</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Seitz</span>
+            <span class="sfar-wep-badge">20–45%</span>
+          </div>
+          <p class="sfar-summary">Evaluates quantum LiDAR as unlikely to achieve operational utility by 2035 due to photon loss, range limits, and system complexity.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-airborne-asw-magnetometry">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Airborne ASW Magnetometry</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Dunlap</span>
+            <span class="sfar-wep-badge">20–45%</span>
+          </div>
+          <p class="sfar-summary">Assesses airborne quantum magnetometry as unlikely for widespread littoral ASW detection due to environmental noise overwhelming submarine signatures.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-quantum-clocks-pnt-advantage">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Quantum Clocks PNT Advantage</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Barwick</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Evaluates quantum atomic clocks providing US timing advantage for PNT and SIGINT applications, with AUKUS trilateral deployment confirmed.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-quantum-gps-aerospace-integration">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Quantum GPS Aerospace Integration</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Seitz</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Assesses integration of quantum PNT into aerospace platforms and the interoperability challenges with existing GPS-dependent architectures.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-airborne-quantum-sensing">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Airborne Quantum Sensing</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Dunlap</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Evaluates which airborne platforms can accommodate quantum sensing payloads given SWaP-C constraints through 2035.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-solid-state-quantum-sensing">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Solid-State Quantum Sensing</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Dunlap</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Assesses NV diamond and silicon carbide defect sensors as the most viable near-term pathway due to CMOS compatibility and room-temperature operation.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-wideband-quantum-rf-receivers">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Wideband Quantum RF Receivers</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Kaminski</span>
+            <span class="sfar-wep-badge">80–95%</span>
+          </div>
+          <p class="sfar-summary">Evaluates Rydberg-atom receivers (RYDAR) as very likely to achieve fixed-site IOC by 2035, detecting signals below classical receiver noise floors.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-environmental-noise">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Environmental Noise</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Kaminski</span>
+            <span class="sfar-wep-badge">80–95%</span>
+          </div>
+          <p class="sfar-summary">Assesses environmental magnetic and vibrational noise as very likely to confine quantum sensing deployment to fixed sites and strategic platforms through 2035.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-quantum-sigint">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Quantum SIGINT</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Sye</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Evaluates RYDAR collection advantage against PRC low-probability-of-intercept waveforms and frequency-hopping tactical data links.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-prc-submarine-and-gps-threat">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">PRC Submarine and GPS Threat</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Barwick</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Assesses China&#39;s quantum inertial navigation creating GPS-denial asymmetry — enabling PRC operations in conditions it may itself create through jamming.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+  <!-- Chapter 3 -->
+  <div class="chapter-section" id="ch3">
+    <div class="chapter-num">3</div>
+    <div class="chapter-title">Chapter 3</div>
+    <div class="chapter-headline">PRC Dual-Use Quantum Sensing at Belt and Road Facilities Likely to Evade Standard Indications and Warning by 2035</div>
+  </div>
+  <section class="report-section" id="ch3-main">
+    <div class="section-kicker kf3">Key Finding #3 · Likely 55–80%</div>
+    <h2>BRI Dual-Use and the I&amp;W Gap</h2>
+    <p>PRC Dual-Use Quantum Sensing at Belt and Road Facilities Likely to Evade Standard Indications and Warning by 2035</p>
+<p>PRC dual-use quantum sensing at Belt and Road Initiative (BRI) facilities is likely to produce strategic surprise by 2035 by operating outside the indications-and-warning frameworks the Joint Force uses to detect adversary capability development. US RYDAR provides a likely but temporary and conditional collection advantage against an adapting target. The two vectors are not symmetric: US advantage depends on successful operational integration and persists only until the PRC identifies compromised signatures and adapts, whereas PRC advantage reflects a structural shift in how sensing is deployed, concealed, and sustained globally.</p>
+<p>The United States is very likely to achieve initial operational capability for RYDAR at fixed SIGINT sites by 2035, enabling detection of PRC low-probability-of-intercept waveforms, frequency-hopping tactical data links, and low-power air defense radar emissions that current collection systems cannot resolve. While RYDAR’s passive detection modality avoids traditional electronic warfare countermeasures such as anti-radiation targeting and broadband jamming, it does not eliminate vulnerability to PRC or other adversary adaptation. The PRC has a roughly even chance (45–55%) of fielding precision counter-quantum electronic warfare capabilities designed to disrupt atomic coherence through directed electromagnetic or optical interference. RYDAR’s advantage is therefore conditional and temporary: intelligence gain persists only until the PRC identifies compromised emission signatures, adapts its systems, or employs targeted disruption against the sensing mechanism itself. Without CJADC2 integration, RYDAR collection is unlikely to translate into operational advantage, reducing the probability of intelligence surprise despite technical success.</p>
+<p>The PRC dual-use vector is more consequential because it changes the structure of the sensing environment rather than exploiting a temporary collection opportunity. Over 40 PRC-operated port facilities at strategic chokepoints, including Djibouti, Gwadar, and Hambantota, combined with undersea cable landing stations and satellite ground stations across four continents, provide the stable, powered environments required for quantum sensing systems. COSCO’s Chancay port in Peru, operational since November 2024, establishes the first PRC-controlled deep-water facility in South America, while 22 BRI agreements across Latin America and the Caribbean extend potential sensing coverage beyond the Indo-Pacific into SOUTHCOM. Passive gravimeters deployed at these sites are very likely to map subsurface density anomalies consistent with bunkers, tunnels, and underground command facilities at depths where ground-penetrating radar cannot reach, and magnetic sensors at chokepoint ports are likely to track US and allied naval traffic.</p>
+<p>The mechanism of surprise is not sensor performance, but deployment under civilian attribution that places PRC capability outside US detection frameworks. PRC quantum sensing deployed at commercial facilities operates under dual-use cover, masking intelligence purpose from host nations and US monitoring. In contrast, equivalent US deployments would occur at military installations, making them overt, attributable, and constrained by host-nation agreements. PRC sensing capability is likely to persist undetected within commercial environments, producing collection blindness that is itself a source of strategic surprise distinct from the underlying sensor physics.</p>
+<p>Three Joint Force gaps are likely to compound simultaneously. First, there is no established monitoring framework for PRC dual-use quantum deployment under commercial cover. Second, platform and doctrinal adaptation timelines average over a decade, delaying effective response. Third, CJADC2 data integration remains unresolved, with GAO documenting $1.4 billion in investment over six years without achieving a cross-service data-sharing architecture. No single gap is decisive, but in combination they leave the Joint Force reliant on concealment assumptions that PRC sensing is designed to defeat. The Defense Intelligence Agency assesses that quantum technology deployments are difficult to detect until after fielding, reducing warning timelines to months rather than years and foreclosing reactive adaptation.</p>
+<p>Indicators of PRC quantum sensing operationalization require standing collection posture prior to deployment. External indicators include: shifts in PRC academic publication patterns from theoretical physics toward applied sensor engineering at PLA-affiliated institutions such as the National University of Defense Technology and USTC; procurement signals for vibration-isolation systems, vacuum components, and precision laser equipment at overseas facilities; satellite imagery showing climate-controlled enclosures, dedicated power systems, and restricted-access areas at BRI ports and mining concessions; and patent activity indicating transition from research to production in quantum magnetometry, gravimetry, and RF sensing. Internal indicators include PRC naval routing patterns suggesting confidence in persistent chokepoint tracking and changes in subterranean concealment practices reflecting adaptation to gravimetric detection.</p>
+<p>Army ground forces are unlikely to field organic quantum sensing systems by 2035 due to size, weight, power, and cost (SWaP-C) constraints, but Army exposure to quantum sensing is operationally significant. Army deep strike is likely to depend on targeting data derived from strategic platforms enabled by quantum positioning, navigation, and timing (PNT) in GPS-denied environments. PRC quantum-derived intelligence is likely to expose Army underground logistics nodes, forward command posts, and subterranean command-and-control facilities in regions where PRC commercial infrastructure is present. The decisions required to mitigate these vulnerabilities, including doctrinal updates for subterranean concealment, CJADC2 integration, and persistent monitoring of PRC dual-use deployment, operate on timelines measured in years, while the warning window for PRC deployment is assessed in months. Joint Force preparation that begins after PRC deployment is unlikely to preserve concealment or prevent operational surprise.</p>
+  </section>
+  
+      <div class="sfar-placeholder" id="sfar-prc-bri-quantum-sensing">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">PRC BRI Quantum Sensing</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Sye</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Evaluates the 40+ PRC-operated port facilities as stable sensing platforms operating under civilian attribution outside Joint Force I&amp;W frameworks.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-quantum-gravimetry-africa">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Quantum Gravimetry Africa</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Sye</span>
+            <span class="sfar-wep-badge">80–95%</span>
+          </div>
+          <p class="sfar-summary">Assesses PRC passive gravimetry at African mining and port installations as very likely to compromise subterranean concealment in African operating environments.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-prc-quantum-operationalization">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">PRC Quantum Operationalization</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Seitz</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Evaluates PRC timeline for transitioning quantum sensing from laboratory to operational deployment across BRI infrastructure by 2035.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-prc-quantum-operational-risk">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">PRC Quantum Operational Risk</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Sye</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Assesses the operational risk to Joint Force subterranean operations, maritime maneuver, and GPS-dependent logistics from PRC quantum sensing.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+  <!-- Chapter 4 -->
+  <div class="chapter-section" id="ch4">
+    <div class="chapter-num">4</div>
+    <div class="chapter-title">Chapter 4</div>
+    <div class="chapter-headline">Ecosystem Integration, Not Laboratory Sensitivity, Likely to Decide Quantum Advantage by 2035</div>
+  </div>
+  <section class="report-section" id="ch4-main">
+    <div class="section-kicker kf4">Key Finding #4 · Even Chance 45–55%</div>
+    <h2>Ecosystem Integration</h2>
+    <h3 class="subsection">Ecosystem Integration, Not Laboratory Sensitivity, Likely to Decide Quantum Advantage by 2035</h3>
+<p>Through 2035, one enabling material pathway and four integration barriers are likely to determine whether laboratory quantum sensing translates into fielded military advantage. The actor that resolves these barriers first, rather than the actor with the highest laboratory sensitivity, is likely to gain an operational advantage. This competition is defined not by discovery, but by integration and fielding.</p>
+<p>The enabling pathway is manufacturing compatibility with complementary metal-oxide-semiconductor (CMOS) processes. Solid-state quantum sensing approaches, including nitrogen-vacancy diamond sensors and silicon carbide defect centers, are likely to scale through existing semiconductor foundry lines. In contrast, other quantum sensing modalities, such as Rydberg-atom receivers (RYDAR) and cold-atom gravimetry, rely on vapor-cell or ultra-high-vacuum architectures that are not inherently CMOS-compatible and are therefore likely to face greater challenges in achieving volume production, though fixed-site deployment avoids the volume-production threshold that would otherwise constrain fielding within this timeframe. The four technologies assessed as unlikely to field by 2035 rely on architectures that require cryogenic infrastructure, exotic photon sources, or tightly controlled environments that further constrain scalability. CMOS compatibility is therefore likely the primary material condition that separates scalable quantum sensing from laboratory demonstration by 2035.</p>
+<p>The first barrier is environmental ruggedization. Vibration, thermal drift, and electromagnetic interference are likely to confine quantum sensing deployment to stable, fixed sites and strategic platforms with heavy-lift capacity through 2035. DARPA’s RoQS program is likely to advance ruggedization standards but is unlikely to deliver sufficient miniaturization for platforms at the tactical echelon by 2035. The PRC likely benefits from access to dual-use commercial infrastructure along the Belt and Road that bypasses SWaP-C constraints entirely, while the United States likely benefits from advanced platform engineering and testing environments.</p>
+<p>The second barrier is manufacturing and supply chain fragility. Silicon-28 isotopic enrichment, electronic-grade synthetic diamond, and ultra-high-vacuum cells each represent limited industrial capacity and potential single points of failure. AUKUS export control alignment finalized in August 2024 enables technology transfer across partner industrial bases, but underlying production constraints remain binding. The United States and its allies likely retain an advantage in semiconductor manufacturing scale and process maturity, while the PRC is likely to partially offset this through state-directed scaling and supply chain prioritization.</p>
+<p>The third barrier is the CJADC2 data fusion gap. The Joint Force is unlikely to share quantum sensor data across warfighting domains by 2035 because current data-sharing systems cannot process quantum data formats. GAO documented in April 2025 that the Department of War spent $1.4 billion over six years on CJADC2 without producing a framework for sharing data across any sensor modality. CSIS assessed in October 2025 that the first country to integrate quantum sensors into military decision-making is likely to reduce the advantages of submarines and stealth aircraft. This is the most consequential barrier because it is likely to strand otherwise successful sensor programs at the platform level.</p>
+<p>The fourth barrier is workforce pipeline deficits. The absence of a dedicated DoW quantum sensing career field, combined with clearance delays and competition with commercial industry, is likely to constrain US fielding timelines. Training pipelines for strategic platforms are likely sufficient, but no pathway exists for tactical-level operators. The PRC’s civil-military fusion model is likely to produce qualified operators more rapidly at the strategic level.</p>
+<p>These four barriers do not operate independently; they compound. A sensor that survives ruggedization but lacks a CMOS-compatible production pathway cannot be manufactured at scale. A sensor produced at scale but lacking a CJADC2 data pathway cannot deliver intelligence beyond the platform that generated it. A data architecture that accepts quantum formats but lacks trained operators produces latency that erases tactical value. Partial progress across barriers is therefore unlikely to produce operational advantage. The actor that resolves the complete chain from material to manufacturing to data fusion to a trained operator is likely to gain a decisive advantage. This dynamic currently favors neither actor decisively: the United States likely holds advantages in CMOS manufacturing capacity and allied industrial depth, while the PRC likely holds advantages in fixed-site infrastructure and the speed of workforce integration.</p>
+<p>For the Army, this finding shapes two planning horizons. In the near term through 2035, Army ground forces are unlikely to carry organic quantum sensors due to SWaP-C constraints, but the Army’s ability to effect strategic targets is likely to depend on targeting data derived from quantum-enabled platforms operating in GPS-denied environments. The CJADC2 gap directly threatens the Army’s access to that data. In the longer term, the absence of a quantum MOS or training pipeline at the tactical echelon means the Army is unlikely to be postured to employ quantum sensors even when miniaturization permits ground-based deployment. Both gaps require action on timelines measured in years, not months, and both precede the sensors themselves.</p>
+  </section>
+  
+      <div class="sfar-placeholder" id="sfar-prc-supply-chain-gap">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">PRC Supply Chain Gap</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Barwick</span>
+            <span class="sfar-wep-badge">20–45%</span>
+          </div>
+          <p class="sfar-summary">Evaluates whether China&#39;s supply chain for quantum sensing components contains exploitable vulnerabilities that could constrain fielding timelines.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-quantum-sensor-producibility">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Quantum Sensor Producibility</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Seitz</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Assesses manufacturing readiness for quantum sensing components and the CMOS compatibility pathway that separates fieldable from laboratory systems.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-quantum-swap-improvements">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Quantum SWaP Improvements</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Seitz</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Evaluates size, weight, power, and cost reduction trajectories for quantum sensing systems and the implications for platform integration by 2035.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-silicon-28-and-cmos-manufacturing">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Silicon-28 and CMOS Manufacturing</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Dunlap</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Assesses silicon-28 isotopic enrichment and CMOS fabrication as the critical manufacturing bottleneck for solid-state quantum sensor production.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-helium-supply-chain">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Helium Supply Chain</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Barwick</span>
+            <span class="sfar-wep-badge">20–45%</span>
+          </div>
+          <p class="sfar-summary">Evaluates helium supply chain constraints on SQUID sensor fielding, finding helium is unlikely to be the binding constraint by 2035.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-quantum-operator-training">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Quantum Operator Training</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Seitz</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Assesses the workforce pipeline for strategic-platform quantum operators and the gap in tactical-level training pathways.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-quantum-workforce-pipeline">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Quantum Workforce Pipeline</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Sye</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Evaluates the structural workforce deficit created by the absence of a quantum sensing MOS and DoW career field by 2035.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-joint-quantum-data-sharing">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Joint Quantum Data Sharing</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Sye</span>
+            <span class="sfar-wep-badge">20–45%</span>
+          </div>
+          <p class="sfar-summary">Assesses CJADC2 data fusion readiness for quantum sensor outputs, finding cross-domain data sharing unlikely by 2035 despite $1.4B investment.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-quantum-doctrine-adaptation">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Quantum Doctrine Adaptation</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Sye</span>
+            <span class="sfar-wep-badge">45–55%</span>
+          </div>
+          <p class="sfar-summary">Evaluates whether Joint Force doctrine can adapt to quantum sensing environments within platform acquisition timelines averaging 12 years.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+      <div class="sfar-placeholder" id="sfar-quantum-convergence-and-autonomous-warfi">
+        <div class="sfar-header">
+          <div class="sfar-kicker">Short-Form Analytic Report</div>
+          <h3 class="sfar-title">Quantum Convergence and Autonomous Warfighting</h3>
+          <div class="sfar-meta">
+            <span class="sfar-author">Author: Kaminski</span>
+            <span class="sfar-wep-badge">55–80%</span>
+          </div>
+          <p class="sfar-summary">Assesses the convergence of quantum sensing, computing, and AI as likely to enable autonomous warfighting capabilities by 2036.</p>
+        </div>
+        <div class="sfar-pending">
+          <div class="pending-icon">📄</div>
+          <div class="pending-text">Full text forthcoming</div>
+          <div class="pending-sub">This SFAR will be populated in the next update.</div>
+        </div>
+      </div>
+
+  <!-- Beyond 2035 -->
+  <section class="report-section" id="beyond">
+    <div class="section-kicker">Outlook</div>
+    <h2>Beyond 2035</h2>
+    <p>Tactical proliferation of quantum sensors to brigade-and-below echelons is likely to depend on advances in photonic miniaturization, ambient-temperature operation, AI-enabled data fusion, and workforce development at the tactical level. These constraints are not solely technological but structural, and some are unlikely to resolve with time alone. Beyond 2035, quantum sensing is likely to shift competition toward persistent detection rather than platform survivability, reshaping assumptions about concealment, maneuver, and targeting beyond current operational concepts.</p>
+<p>Quantum sensing is also likely to introduce new considerations for strategic stability. If one actor achieves a sensing advantage while the other retains legacy concealment assumptions, the resulting asymmetry is likely to create first-mover incentives, particularly in domains tied to nuclear force survivability. The trajectory assessed through 2035 suggests the emergence of asymmetric but overlapping sensing advantages, with the United States likely benefiting from RYDAR-enabled SIGINT collection and the PRC likely benefiting from gravimetry and chokepoint monitoring. This dynamic produces partial transparency rather than full mutual visibility. The implications of this shift fall outside the scope of this assessment but represent a priority area for future study.</p>
+  </section>
+
+  <!-- Annexes -->
+  <section class="report-section" id="annex-a">
+    <div class="section-kicker">Annex A</div>
+    <h2>Terms of Reference</h2>
+    <p>Full Terms of Reference forthcoming. The primary research question: <em>What are the likely quantum sensing technologies that will shape the strategic operating environment between the United States and the People's Republic of China (PRC) by 2035?</em></p>
+  </section>
+
+  <section class="report-section" id="annex-b">
+    <div class="section-kicker">Annex B</div>
+    <h2>ICD-203 Analytic Standards and Words of Estimative Probability</h2>
+    <table class="wep-table">
+      <thead><tr><th>Term</th><th>Synonym</th><th>Probability Range</th></tr></thead>
+      <tbody>
+        <tr><td>Almost No Chance</td><td>Remote</td><td>01–05%</td></tr>
+        <tr><td>Very Unlikely</td><td>Highly Improbable</td><td>05–20%</td></tr>
+        <tr><td>Unlikely</td><td>Improbable</td><td>20–45%</td></tr>
+        <tr><td>Roughly Even Chance</td><td>Roughly Even Odds</td><td>45–55%</td></tr>
+        <tr><td>Likely</td><td>Probable</td><td>55–80%</td></tr>
+        <tr><td>Very Likely</td><td>Highly Probable</td><td>80–95%</td></tr>
+        <tr><td>Almost Certainly</td><td>Nearly Certain</td><td>95–99%</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="report-section" id="annex-c">
+    <div class="section-kicker">Annex C</div>
+    <h2>Standard Primary Source Credibility Scale (The Paul Scale)</h2>
+    <p>Full annex forthcoming. Source reliability is annotated throughout as High (H), Moderate (M), or Low (L) at the point of each citation, hyperlinking directly to the primary source in the electronic version.</p>
+  </section>
+
+  <section class="report-section" id="annex-d">
+    <div class="section-kicker">Annex D</div>
+    <h2>Analytic Confidence Factors</h2>
+    <p>Full annex forthcoming. Overall analytic confidence: <strong style="color:var(--cyan);">Moderate</strong>. Source reliability ranged from moderate to high across the analytic base. The team employed Nominal Group Technique, Multi-Criteria Decision-Making Process, and the Millhone Method.</p>
+  </section>
+
+  <section class="report-section" id="annex-e">
+    <div class="section-kicker">Annex E</div>
+    <h2>Glossary of Quantum Sensing Terms</h2>
+    <p>Full glossary forthcoming.</p>
+  </section>
+
+</main>
+</div>
+
+<script>
+// ── Smooth scroll for all TOC links ──────────────
+document.querySelectorAll('.toc-chapter, .toc-item').forEach(link => {
+  link.addEventListener('click', e => {
+    const href = link.getAttribute('href');
+    if (href && href.startsWith('#')) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) target.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  });
+});
+
+// SFAR TOC items scroll
+document.querySelectorAll('.toc-sfar').forEach(item => {
+  item.addEventListener('click', () => {
+    const target = document.getElementById(item.dataset.target);
+    if (target) target.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+});
+
+// ── Tooltip positioning — keep on screen ─────────
+document.querySelectorAll('.toc-sfar').forEach(item => {
+  item.addEventListener('mouseenter', () => {
+    const tip = item.querySelector('.sfar-tooltip');
+    if (!tip) return;
+    const rect = item.getBoundingClientRect();
+    tip.style.top = Math.min(rect.top, window.innerHeight - 220) + 'px';
+  });
+});
+
+// ── Chapter collapse/expand ───────────────────────
+document.querySelectorAll('.chapter-toggle').forEach(toggle => {
+  const id = toggle.id || toggle.getAttribute('href')?.replace('#','');
+  const listMap = {'ch1':'ch1-sfars','ch2':'ch2-sfars','ch3':'ch3-sfars','ch4':'ch4-sfars'};
+  const listId = Object.keys(listMap).find(k => toggle.getAttribute('href')?.includes(k));
+  if (!listId) return;
+  const list = document.getElementById(listMap[listId]);
+  if (!list) return;
+  toggle.addEventListener('click', e => {
+    if (e.target !== toggle) return;
+    // Don't prevent default — allow scroll too
+    toggle.classList.toggle('collapsed');
+    list.classList.toggle('hidden');
+  });
+});
+
+// ── Active section highlighting ───────────────────
+const allSections = document.querySelectorAll('[id]');
+const tocLinks = document.querySelectorAll('.toc-chapter, .toc-item, .toc-sfar');
+
+function getIdFromLink(el) {
+  if (el.classList.contains('toc-sfar')) return el.dataset.target;
+  const href = el.getAttribute('href');
+  return href ? href.replace('#','') : null;
+}
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const id = entry.target.id;
+    tocLinks.forEach(link => {
+      const linkId = getIdFromLink(link);
+      link.classList.toggle('active', linkId === id);
+    });
+  });
+}, {rootMargin:'-56px 0px -60% 0px', threshold:0});
+
+allSections.forEach(s => observer.observe(s));
+
+// ── Full-text search ──────────────────────────────
+const searchInput = document.getElementById('search-input');
+let highlights = [];
+
+function clearHighlights() {
+  highlights.forEach(el => {
+    el.outerHTML = el.innerHTML;
+  });
+  highlights = [];
+  document.querySelectorAll('.highlight').forEach(el => {
+    const parent = el.parentNode;
+    parent.replaceChild(document.createTextNode(el.textContent), el);
+    parent.normalize();
+  });
+}
+
+searchInput.addEventListener('input', () => {
+  clearHighlights();
+  const q = searchInput.value.trim();
+  if (q.length < 3) return;
+  const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  document.querySelectorAll('.report-section p, .report-section li, .sfar-summary, .chapter-headline').forEach(el => {
+    if (el.children.length > 0) return;
+    if (regex.test(el.textContent)) {
+      el.innerHTML = el.textContent.replace(regex, '<mark class="highlight">$1</mark>');
+      highlights.push(el);
+    }
+  });
+  // Jump to first highlight
+  const first = document.querySelector('.highlight');
+  if (first) first.scrollIntoView({behavior:'smooth', block:'center'});
+});
+</script>
+</body>
+</html>
