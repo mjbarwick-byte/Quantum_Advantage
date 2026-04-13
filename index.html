@@ -799,9 +799,15 @@
     <h2>📰 Quantum OSINT News Stream</h2>
     <button class="trl-close" id="news-close">×</button>
   </div>
-  <div style="padding:8px 14px 6px; border-bottom:1px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:space-between;">
-    <span style="font-size:8px;color:#8ab4cc;letter-spacing:0.08em;">GDELT · GOOGLE NEWS · NEWSAPI — deduplicated, newest first</span>
-    <span id="news-source-counts" style="font-size:8px;color:var(--dim);letter-spacing:0.06em;"></span>
+  <div style="padding:6px 14px 6px; border-bottom:1px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+    <span style="font-size:8px;color:#8ab4cc;letter-spacing:0.06em;white-space:nowrap;">GDELT · GOOGLE NEWS · NEWSAPI — deduplicated, newest first</span>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+      <span style="font-family:var(--font-hud);font-size:7px;color:var(--dim);letter-spacing:0.1em;">SOURCE CRED:</span>
+      <span style="font-family:var(--font-hud);font-size:7px;padding:1px 5px;border-radius:2px;border:1px solid #00ff96;color:#00ff96;background:rgba(0,0,0,0.3);">HIGH</span>
+      <span style="font-family:var(--font-hud);font-size:7px;padding:1px 5px;border-radius:2px;border:1px solid #ffb300;color:#ffb300;background:rgba(0,0,0,0.3);">MED</span>
+      <span style="font-family:var(--font-hud);font-size:7px;padding:1px 5px;border-radius:2px;border:1px solid #ff4444;color:#ff4444;background:rgba(0,0,0,0.3);">LOW</span>
+    </div>
+    <span id="news-source-counts" style="font-size:8px;color:var(--dim);letter-spacing:0.05em;white-space:nowrap;"></span>
   </div>
   <div class="news-body" id="news-body">
     <div class="news-status loading">INITIALIZING FEED…</div>
@@ -1317,6 +1323,69 @@ function setNewsStatus(msg, type = 'loading') {
     `<div class="news-status ${type}">${msg}</div>`;
 }
 
+// ── SOURCE CREDIBILITY RATING ──────────────────────────────
+// H = High (peer-reviewed, official gov/defense, major wire services)
+// M = Medium (established press, reputable tech/defense outlets)
+// L = Low  (state-controlled adversary media, unknown/tabloid domains)
+
+const CRED_HIGH = new Set([
+  // Scientific / Academic
+  'nature.com','science.org','sciencemag.org','pnas.org','arxiv.org',
+  'physicstoday.org','aps.org','osa.org','ieee.org','mit.edu','caltech.edu',
+  'stanford.edu','cam.ac.uk','ox.ac.uk','quantamagazine.org',
+  // US Government / Defense Official
+  'defense.gov','darpa.mil','army.mil','navy.mil','airforce.mil','dod.gov',
+  'energy.gov','nist.gov','whitehouse.gov','congress.gov','gao.gov',
+  'dni.gov','state.gov','arpa-e.energy.gov','quantum.gov',
+  // Major Wire Services
+  'reuters.com','apnews.com','afp.com',
+  // Established Defense Trade
+  'defensenews.com','defenseone.com','breakingdefense.com','janes.com',
+  'aviationweek.com','c4isrnet.com','defensescoop.com','militarytimes.com',
+  'nationaldefensemagazine.org','ausa.org',
+  // Allied Government / Defense
+  'gov.uk','mod.uk','canada.ca','defence.gov.au','nato.int',
+  'aukus.gov.au','epo.org','wipo.int',
+  // Think Tanks (established)
+  'csis.org','rand.org','brookings.edu','cnas.org','iiss.org',
+  'cfr.org','wilsoncenter.org','stimson.org','usip.org',
+]);
+
+const CRED_LOW = new Set([
+  // PRC State-Controlled Media
+  'xinhuanet.com','xinhaunet.com','chinadaily.com.cn','china.org.cn',
+  'globaltimes.cn','cgtn.com','people.com.cn','pla.cn','81.cn',
+  'chinamil.com.cn','mod.gov.cn','scmp.com',
+  // Russian State Media
+  'rt.com','sputniknews.com','tass.com','ria.ru','izvestia.ru',
+  'pravda.ru','vz.ru','rg.ru',
+  // Iranian State Media
+  'presstv.ir','irna.ir','mehrnews.com',
+  // Other known low-credibility / tabloid
+  'infowars.com','naturalnews.com','beforeitsnews.com','zerohedge.com',
+  'globalresearch.ca','mintpressnews.com',
+  // Known content farms
+  '奉若神明网','eworldvu.com',
+]);
+
+function getCredibility(source, feed) {
+  if (!source) return 'M';
+  const domain = source.toLowerCase().replace(/^www\./,'');
+  // Check exact and partial matches
+  for (const h of CRED_HIGH) { if (domain === h || domain.endsWith('.' + h) || domain.includes(h)) return 'H'; }
+  for (const l of CRED_LOW)  { if (domain === l || domain.endsWith('.' + l) || domain.includes(l)) return 'L'; }
+  // NewsAPI sources tend to be established outlets
+  if (feed === 'NewsAPI') return 'M';
+  // GDELT unknown domains — treat as medium-low
+  return 'M';
+}
+
+const CRED_STYLE = {
+  H: { border: 'rgba(0,255,150,0.25)',  bg: 'rgba(0,255,150,0.04)',  dot: '#00ff96', label: 'HIGH' },
+  M: { border: 'rgba(255,180,0,0.20)',  bg: 'rgba(255,180,0,0.03)',  dot: '#ffb300', label: 'MED'  },
+  L: { border: 'rgba(255,60,60,0.30)',  bg: 'rgba(255,60,60,0.05)',  dot: '#ff4444', label: 'LOW'  },
+};
+
 // ── FEED BADGE & RENDER ────────────────────────────────────
 const FEED_COLORS = {
   'GDELT':      { bg:'rgba(155,89,255,0.15)', border:'#9b59ff', color:'#c39fff' },
@@ -1337,11 +1406,15 @@ function renderArticles(articles) {
     const displayTitle = a.translated_title || a.title;
     const originalLine = a.translated_title
       ? `<div class="news-original">🌐 ${san(a.title)}</div>` : '';
+    const cred  = getCredibility(a.source, a.feed);
+    const cs    = CRED_STYLE[cred];
+    const credBadge = `<span style="font-family:var(--font-hud);font-size:7px;letter-spacing:0.1em;padding:1px 5px;border-radius:2px;border:1px solid ${cs.dot};color:${cs.dot};background:rgba(0,0,0,0.3);text-transform:uppercase;opacity:0.9;">${cs.label}</span>`;
     return `
-    <div class="news-article">
+    <div class="news-article" style="border-left:2px solid ${cs.border};background:${cs.bg};">
       <a class="news-headline" href="${san(a.url)}" target="_blank" rel="noopener">${san(displayTitle)}</a>
       ${originalLine}
       <div class="news-meta">
+        ${credBadge}
         ${feedBadge(a.feed || '')}
         <span class="news-source">${san(a.source)}</span>
         ${a.country ? `<span class="news-country">${countryFlag(a.country)} ${san(a.country)}</span>` : ''}
