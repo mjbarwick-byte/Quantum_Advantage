@@ -123,9 +123,36 @@ function decodeEnt(s) {
 
 async function fetchGDELT() {
   const terms = [
-    '"quantum sensing"','"quantum radar"','"quantum gravimetry"',
-    '"quantum navigation"','"quantum magnetometry"','"quantum inertial navigation"',
-    '"Rydberg atom"','"Rydberg receiver"'
+    // Original core terms
+    '"quantum sensing"',
+    '"quantum radar"',
+    '"quantum gravimetry"',
+    '"quantum navigation"',
+    '"quantum magnetometry"',
+    '"quantum inertial navigation"',
+    '"Rydberg atom"',
+    '"Rydberg receiver"',
+    // More specific additions (previous update)
+    '"quantum PNT"',
+    '"quantum inertial navigation system"',
+    '"RYDAR"',
+    '"quantum clock" military',
+    '"BeiDou quantum"',
+    '"quantum magnetometer"',
+    '"quantum gravimeter"',
+    '"SQUID sensor" defense',
+    '"quantum key distribution" military',
+    // From key findings documents
+    '"cold-atom interferometry"',
+    '"AUKUS" quantum',
+    '"quantum anti-submarine"',
+    '"quantum LiDAR"',
+    '"National Quantum Initiative"',
+    '"nitrogen-vacancy" sensing',
+    '"civil-military fusion" quantum',
+    '"quantum communication" military',
+    '"GPS-denied" quantum',
+    '"atom interferometry" defense',
   ].join(' OR ');
   const q   = encodeURIComponent(`(${terms})`);
   const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=artlist&maxrecords=25&format=json&timespan=14d&sort=datedesc`;
