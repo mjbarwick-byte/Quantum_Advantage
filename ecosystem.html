@@ -9,11 +9,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&family=Source+Code+Pro:wght@400;600&family=Playfair+Display:wght@700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0e1a;color:#c8d0e0;font-family:'Source Sans 3',sans-serif;overflow:hidden;height:100vh;width:100vw}
-#header{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(180deg,rgba(10,14,26,.97) 0%,rgba(10,14,26,.85) 80%,rgba(10,14,26,0) 100%);padding:14px 28px 28px;pointer-events:none}
+#header{position:fixed;top:40px;left:0;right:0;z-index:100;background:linear-gradient(180deg,rgba(10,14,26,.97) 0%,rgba(10,14,26,.85) 80%,rgba(10,14,26,0) 100%);padding:14px 28px 28px;pointer-events:none}
 #header>*{pointer-events:auto}
 #header h1{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#e8ecf4;letter-spacing:.5px;margin-bottom:2px}
 #header .subtitle{font-size:11px;font-weight:300;color:#7a8599;letter-spacing:1.5px;text-transform:uppercase}
-#controls{position:fixed;top:62px;left:28px;z-index:100;display:flex;flex-direction:column;gap:4px}
+#controls{position:fixed;top:102px;left:28px;z-index:100;display:flex;flex-direction:column;gap:4px}
 .ctrl-btn{background:rgba(20,26,44,.9);border:1px solid rgba(100,120,160,.25);color:#8a96ab;font-family:'Source Code Pro',monospace;font-size:9px;padding:4px 10px;cursor:pointer;border-radius:3px;transition:all .2s;text-align:left;letter-spacing:.5px;text-transform:uppercase}
 .ctrl-btn:hover{background:rgba(30,40,70,.95);border-color:rgba(120,150,200,.4);color:#b0bcce}
 .ctrl-btn.active{background:rgba(40,55,90,.95);border-color:rgba(100,160,255,.5);color:#d0d8e8}
@@ -27,7 +27,7 @@ body{background:#0a0e1a;color:#c8d0e0;font-family:'Source Sans 3',sans-serif;ove
 .legend-row{display:flex;align-items:center;gap:6px;margin-bottom:2px;padding:1px 3px}
 .legend-ring{width:8px;height:8px;border-radius:50%;border:2px solid;flex-shrink:0;background:transparent}
 .legend-text{font-size:10px;color:#8a96ab}
-#info-panel{position:fixed;top:62px;right:28px;z-index:100;background:rgba(12,16,28,.95);border:1px solid rgba(80,100,140,.3);border-radius:4px;padding:16px 18px;max-width:300px;display:none;backdrop-filter:blur(8px)}
+#info-panel{position:fixed;top:102px;right:28px;z-index:100;background:rgba(12,16,28,.95);border:1px solid rgba(80,100,140,.3);border-radius:4px;padding:16px 18px;max-width:300px;display:none;backdrop-filter:blur(8px)}
 #info-panel.visible{display:block}
 #info-panel .panel-title{font-size:14px;font-weight:700;color:#e0e6f0;margin-bottom:3px}
 #info-panel .panel-category{font-family:'Source Code Pro',monospace;font-size:8px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
@@ -53,6 +53,56 @@ svg{width:100%;height:100vh}
 </style>
 </head>
 <body>
+
+<!-- ── SITE NAV ───────────────────────────────────────── -->
+<div style="
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;gap:6px;
+  padding:8px 20px;
+  background:rgba(10,14,26,0.97);
+  border-bottom:1px solid rgba(0,212,255,0.15);
+  backdrop-filter:blur(6px);">
+  <span style="font-family:'Source Code Pro',monospace;font-size:8px;
+               letter-spacing:0.18em;color:rgba(0,212,255,0.5);
+               text-transform:uppercase;margin-right:8px;white-space:nowrap;">
+    QUANTUM ADVANTAGE
+  </span>
+  <a href="index.html" style="
+    display:flex;align-items:center;gap:5px;
+    background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.35);
+    color:#00d4ff;font-family:'Source Code Pro',monospace;font-size:9px;
+    letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;
+    padding:4px 11px;border-radius:3px;transition:background .2s;white-space:nowrap;"
+    onmouseover="this.style.background='rgba(0,212,255,0.16)'"
+    onmouseout="this.style.background='rgba(0,212,255,0.08)'">
+    📋 Key Findings
+  </a>
+  <a href="map.html" style="
+    display:flex;align-items:center;gap:5px;
+    background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.25);
+    color:#7ab8d4;font-family:'Source Code Pro',monospace;font-size:9px;
+    letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;
+    padding:4px 11px;border-radius:3px;transition:background .2s;white-space:nowrap;"
+    onmouseover="this.style.background='rgba(0,212,255,0.13)'"
+    onmouseout="this.style.background='rgba(0,212,255,0.06)'">
+    🗺 Live Dashboard
+  </a>
+  <a href="reports.html" style="
+    display:flex;align-items:center;gap:5px;
+    background:rgba(155,89,255,0.08);border:1px solid rgba(155,89,255,0.3);
+    color:#c39fff;font-family:'Source Code Pro',monospace;font-size:9px;
+    letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;
+    padding:4px 11px;border-radius:3px;transition:background .2s;white-space:nowrap;"
+    onmouseover="this.style.background='rgba(155,89,255,0.18)'"
+    onmouseout="this.style.background='rgba(155,89,255,0.08)'">
+    📄 Full Report
+  </a>
+  <span style="margin-left:auto;font-family:'Source Code Pro',monospace;
+               font-size:8px;color:rgba(0,255,150,0.6);letter-spacing:0.12em;
+               text-transform:uppercase;">
+    🔬 Ecosystem Map
+  </span>
+</div>
 <div id="header"><h1>Quantum Sensing Ecosystem</h1><div class="subtitle">US–PRC Strategic Competition Through 2035 · Team Quantum Advantage · USAWC AY26</div></div>
 <div id="controls">
 <button class="ctrl-btn active" onclick="filterCategory('all',this)">All Nodes</button>
@@ -69,6 +119,17 @@ svg{width:100%;height:100vh}
 <button class="ctrl-btn" onclick="highlightKF('kf4',this)" style="border-left:3px solid rgba(74,158,255,.5)">KF4 · Integration Chain</button>
 <div class="ctrl-sep"></div>
 <button class="ctrl-btn" onclick="resetView(this)">✕ Reset</button>
+<div class="ctrl-sep"></div>
+<div style="font-family:'Source Code Pro',monospace;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:#3a4558;padding:2px 4px;margin-bottom:2px;">Navigate To</div>
+<a href="index.html" class="ctrl-btn" style="text-decoration:none;display:flex;align-items:center;gap:6px;border-left:3px solid rgba(0,212,255,0.5);">
+  <span style="font-size:9px;">📋</span> Key Findings
+</a>
+<a href="map.html" class="ctrl-btn" style="text-decoration:none;display:flex;align-items:center;gap:6px;border-left:3px solid rgba(0,212,255,0.5);">
+  <span style="font-size:9px;">🗺</span> Live Dashboard
+</a>
+<a href="reports.html" class="ctrl-btn" style="text-decoration:none;display:flex;align-items:center;gap:6px;border-left:3px solid rgba(155,89,255,0.5);">
+  <span style="font-size:9px;">📄</span> Full Report
+</a>
 </div>
 <div id="legend"><h3>Competitive Advantage</h3>
 <div class="legend-section">
