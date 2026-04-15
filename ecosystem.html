@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quantum Sensing Ecosystem — US–PRC Competition Through 2035</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&family=Source+Code+Pro:wght@400;600&family=Playfair+Display:wght@700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0e1a;color:#c8d0e0;font-family:'Source Sans 3',sans-serif;overflow:hidden;height:100vh;width:100vw}
+#header{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(180deg,rgba(10,14,26,.97) 0%,rgba(10,14,26,.85) 80%,rgba(10,14,26,0) 100%);padding:14px 28px 28px;pointer-events:none}
+#header>*{pointer-events:auto}
+#header h1{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#e8ecf4;letter-spacing:.5px;margin-bottom:2px}
+#header .subtitle{font-size:11px;font-weight:300;color:#7a8599;letter-spacing:1.5px;text-transform:uppercase}
+#controls{position:fixed;top:62px;left:28px;z-index:100;display:flex;flex-direction:column;gap:4px}
+.ctrl-btn{background:rgba(20,26,44,.9);border:1px solid rgba(100,120,160,.25);color:#8a96ab;font-family:'Source Code Pro',monospace;font-size:9px;padding:4px 10px;cursor:pointer;border-radius:3px;transition:all .2s;text-align:left;letter-spacing:.5px;text-transform:uppercase}
+.ctrl-btn:hover{background:rgba(30,40,70,.95);border-color:rgba(120,150,200,.4);color:#b0bcce}
+.ctrl-btn.active{background:rgba(40,55,90,.95);border-color:rgba(100,160,255,.5);color:#d0d8e8}
+.cat-filter{display:flex;align-items:center;gap:6px}
+.cat-filter .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ctrl-sep{height:4px}
+#legend{position:fixed;bottom:16px;left:28px;z-index:100;background:rgba(12,16,28,.92);border:1px solid rgba(80,100,140,.2);border-radius:4px;padding:10px 14px;max-width:240px}
+#legend h3{font-family:'Source Code Pro',monospace;font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:#5a6578;margin-bottom:6px}
+.legend-section{margin-bottom:6px}.legend-section:last-child{margin-bottom:0}
+.legend-label{font-size:7px;text-transform:uppercase;letter-spacing:1px;color:#4a5568;margin-bottom:3px}
+.legend-row{display:flex;align-items:center;gap:6px;margin-bottom:2px;padding:1px 3px}
+.legend-ring{width:8px;height:8px;border-radius:50%;border:2px solid;flex-shrink:0;background:transparent}
+.legend-text{font-size:10px;color:#8a96ab}
+#info-panel{position:fixed;top:62px;right:28px;z-index:100;background:rgba(12,16,28,.95);border:1px solid rgba(80,100,140,.3);border-radius:4px;padding:16px 18px;max-width:300px;display:none;backdrop-filter:blur(8px)}
+#info-panel.visible{display:block}
+#info-panel .panel-title{font-size:14px;font-weight:700;color:#e0e6f0;margin-bottom:3px}
+#info-panel .panel-category{font-family:'Source Code Pro',monospace;font-size:8px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+#info-panel .panel-desc{font-size:11px;line-height:1.5;color:#8a96ab;margin-bottom:8px}
+#info-panel .panel-connections{font-size:10px;color:#6a7688}
+#info-panel .panel-connections span{color:#9aa8bc}
+#info-panel .close-btn{position:absolute;top:8px;right:10px;background:none;border:none;color:#5a6578;font-size:16px;cursor:pointer}
+#info-panel .close-btn:hover{color:#8a96ab}
+#export-btn{position:fixed;bottom:16px;right:28px;z-index:100;background:rgba(20,30,55,.9);border:1px solid rgba(80,120,200,.3);color:#7a90b8;font-family:'Source Code Pro',monospace;font-size:10px;padding:8px 16px;cursor:pointer;border-radius:3px;letter-spacing:.5px;text-transform:uppercase;transition:all .2s}
+#export-btn:hover{background:rgba(30,45,80,.95);border-color:rgba(100,150,255,.5);color:#a0b8e0}
+svg{width:100%;height:100vh}
+.link{stroke-opacity:.15;fill:none}
+.link.highlighted{stroke-opacity:.6}
+.node-circle{stroke-width:1.5;cursor:pointer}
+.node-label{font-family:'Source Sans 3',sans-serif;font-size:9px;fill:#6a7890;pointer-events:none;text-anchor:middle;dominant-baseline:hanging}
+.node-label.highlighted{fill:#c0cce0;font-weight:600;font-size:10px}
+.node.dimmed .node-circle{opacity:.08}
+.node.dimmed .node-label{opacity:.06}
+.link.dimmed{stroke-opacity:.02}
+.tooltip{position:fixed;background:rgba(14,18,32,.96);border:1px solid rgba(80,110,160,.35);border-radius:3px;padding:8px 12px;font-size:11px;color:#b0bcd0;pointer-events:none;z-index:200;max-width:250px;display:none}
+.tooltip .tt-title{font-weight:700;color:#d8e0f0;margin-bottom:2px}
+.tooltip .tt-cat{font-family:'Source Code Pro',monospace;font-size:8px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div id="header"><h1>Quantum Sensing Ecosystem</h1><div class="subtitle">US–PRC Strategic Competition Through 2035 · Team Quantum Advantage · USAWC AY26</div></div>
+<div id="controls">
+<button class="ctrl-btn active" onclick="filterCategory('all',this)">All Nodes</button>
+<button class="ctrl-btn cat-filter" onclick="filterCategory('technology',this)"><span class="dot" style="background:#4a9eff"></span> Technologies</button>
+<button class="ctrl-btn cat-filter" onclick="filterCategory('barrier',this)"><span class="dot" style="background:#ff6b6b"></span> Barriers</button>
+<button class="ctrl-btn cat-filter" onclick="filterCategory('us_ecosystem',this)"><span class="dot" style="background:#4ecdc4"></span> US Ecosystem</button>
+<button class="ctrl-btn cat-filter" onclick="filterCategory('china_ecosystem',this)"><span class="dot" style="background:#ffd93d"></span> China Ecosystem</button>
+<button class="ctrl-btn cat-filter" onclick="filterCategory('deployment',this)"><span class="dot" style="background:#a78bfa"></span> Deployment Pathways</button>
+<button class="ctrl-btn cat-filter" onclick="filterCategory('outcome',this)"><span class="dot" style="background:#f97316"></span> Outcomes</button>
+<div class="ctrl-sep"></div>
+<button class="ctrl-btn" onclick="highlightKF('kf1',this)" style="border-left:3px solid rgba(74,158,255,.5)">KF1 · Competition</button>
+<button class="ctrl-btn" onclick="highlightKF('kf2',this)" style="border-left:3px solid rgba(74,158,255,.5)">KF2 · Tech Triage</button>
+<button class="ctrl-btn" onclick="highlightKF('kf3',this)" style="border-left:3px solid rgba(74,158,255,.5)">KF3 · BRI & I&W Gap</button>
+<button class="ctrl-btn" onclick="highlightKF('kf4',this)" style="border-left:3px solid rgba(74,158,255,.5)">KF4 · Integration Chain</button>
+<div class="ctrl-sep"></div>
+<button class="ctrl-btn" onclick="resetView(this)">✕ Reset</button>
+</div>
+<div id="legend"><h3>Competitive Advantage</h3>
+<div class="legend-section">
+<div class="legend-row"><div class="legend-ring" style="border-color:#4ecdc4"></div><div class="legend-text">US Advantage</div></div>
+<div class="legend-row"><div class="legend-ring" style="border-color:#ff6b6b"></div><div class="legend-text">China Advantage</div></div>
+<div class="legend-row"><div class="legend-ring" style="border-color:#ffd93d"></div><div class="legend-text">Contested / Even</div></div>
+<div class="legend-row"><div class="legend-ring" style="border-color:#7a8599"></div><div class="legend-text">Physics-Bounded</div></div>
+</div>
+<div class="legend-section"><div class="legend-label">Edge Type</div>
+<div class="legend-row"><div style="width:16px;height:2px;background:#4a9eff;flex-shrink:0"></div><div class="legend-text">Depends On</div></div>
+<div class="legend-row"><div style="width:16px;height:2px;background:#4ecdc4;flex-shrink:0"></div><div class="legend-text">Enables</div></div>
+<div class="legend-row"><div style="width:16px;height:2px;background:#ff6b6b;flex-shrink:0"></div><div class="legend-text">Compounds / Blocks</div></div>
+<div class="legend-row"><div style="width:16px;height:2px;background:#a78bfa;flex-shrink:0"></div><div class="legend-text">Deploys To</div></div>
+<div class="legend-row"><div style="width:16px;height:2px;background:#f97316;flex-shrink:0"></div><div class="legend-text">Produces</div></div>
+</div></div>
+<div id="info-panel"><button class="close-btn" onclick="closePanel()">×</button><div class="panel-title"></div><div class="panel-category"></div><div class="panel-desc"></div><div class="panel-connections"></div></div>
+<button id="export-btn" onclick="exportPNG()">⤓ Export</button>
+<div class="tooltip" id="tooltip"></div>
+<svg id="graph"></svg>
+<script>
+const CC={technology:'#4a9eff',barrier:'#ff6b6b',us_ecosystem:'#4ecdc4',china_ecosystem:'#ffd93d',deployment:'#a78bfa',outcome:'#f97316'};
+const AC={us:'#4ecdc4',china:'#ff6b6b',contested:'#ffd93d',bounded:'#555e70',neutral:'#7a8599'};
+const EC={depends:'#4a9eff',enables:'#4ecdc4',compounds:'#ff6b6b',deploys:'#a78bfa',produces:'#f97316'};
+const W=window.innerWidth,H=window.innerHeight;
+const KZ={
+kf1:{cx:W*.16,cy:H*.46},
+kf2:{cx:W*.48,cy:H*.2},
+kf3:{cx:W*.84,cy:H*.46},
+kf4:{cx:W*.48,cy:H*.72}
+};
+function P(k,ox,oy){const z=KZ[k];return{x:z.cx+ox,y:z.cy+oy}}
+
+let focusedNode=null; // track click-locked state
+
+const nodes=[
+{id:'qpnt',label:'Quantum PNT',category:'technology',advantage:'us',size:18,kf:'kf2',desc:'Likely fielded on P-8A, B-21, MQ-4C by 2029-2035. GPS-denied navigation via cold-atom sensors. PRC demonstrated cold-atom gyroscope on CSS at TRL 7.',...P('kf2',-180,-20)},
+{id:'rydar',label:'RYDAR',category:'technology',advantage:'us',size:16,kf:'kf2',desc:'Rydberg Atomic Receivers very likely at fixed SIGINT sites by 2035. Detects LPI signals below classical noise floor. Temporary advantage — PRC adaptation likely.',...P('kf2',-80,-40)},
+{id:'gravimetry',label:'Gravimetry',category:'technology',advantage:'contested',size:15,kf:'kf2',desc:'Cold-atom interferometry detects subsurface density anomalies. PRC very likely to deploy at BRI mining concessions. US/allies lead TRL 5 vs China TRL 4.',...P('kf2',20,-30)},
+{id:'qclocks',label:'Quantum Clocks',category:'technology',advantage:'us',size:14,kf:'kf2',desc:'US leads in portable optical clocks. DARPA ROCkN at-sea for 3 weeks. Vector Atomic 10,000x more stable than CSACs. China 3-5 years behind.',...P('kf2',-240,30)},
+{id:'magnetometry',label:'ASW\nMagnetometry',category:'technology',advantage:'china',size:15,kf:'kf2',desc:'China demonstrated drone-mounted CPT magnetometer at 8 pT, comparable to NATO MAD-XR. Transparent Oceans strategy targets submarine detection.',...P('kf2',120,-20)},
+{id:'nvdiamond',label:'NV Diamond\nSolid-State',category:'technology',advantage:'contested',size:13,kf:'kf2',desc:'Room-temperature CMOS-compatible manufacturing. Very likely mass-producible by 2030. Bosch/Element Six targeting chip-scale.',...P('kf2',-50,40)},
+{id:'qradar',label:'Quantum Radar',category:'technology',advantage:'bounded',size:10,kf:'kf2',desc:'Unlikely by 2035. Physics-bounded: photon attenuation limits range <10km. DSB, MIT Lincoln Lab conclude no military capability.',...P('kf2',220,30)},
+{id:'qlidar',label:'Quantum LiDAR',category:'technology',advantage:'bounded',size:9,kf:'kf2',desc:'Unlikely by 2035. Photon loss, limited range, single-frame imaging. No clear quantum advantage over classical LiDAR.',...P('kf2',260,-20)},
+{id:'qinertial',label:'Quantum Inertial\nNavigation',category:'technology',advantage:'china',size:14,kf:'kf2',desc:'China most mature subdomain. Cold-atom gyroscope on CSS at TRL 7. Direct threat to US GPS dependence.',...P('kf2',70,45)},
+{id:'private_capital',label:'US Private\nCapital ($3.8B)',category:'us_ecosystem',advantage:'us',size:14,kf:'kf1',desc:'US private investment 10x China ($3.8B vs $359M). Decentralized venture capital drives diverse technological pathways.',...P('kf1',-20,-120)},
+{id:'startups',label:'US Startups\n(77-300)',category:'us_ecosystem',advantage:'us',size:12,kf:'kf1',desc:'77-300 quantum startups vs China 11-30. Higher competition drives greater innovation.',...P('kf1',40,-60)},
+{id:'academic',label:'Academic Quality\n(H-index 10)',category:'us_ecosystem',advantage:'us',size:12,kf:'kf1',desc:'US H-index 10 vs China 5. 44.5% international patent filings vs China 6%.',...P('kf1',-50,-10)},
+{id:'darpa_roqs',label:'DARPA RoQS\n& DIU TQS',category:'us_ecosystem',advantage:'us',size:13,kf:'kf1',desc:'RoQS: $24M+ for vibration-resistant sensors. DIU TQS: field tests across 5 quantum domains in 2025.',...P('kf1',30,50)},
+{id:'aukus',label:'AUKUS AQuA',category:'us_ecosystem',advantage:'us',size:15,kf:'kf1',desc:'AUKUS Pillar II quantum cooperation. Export control alignment (Aug 2024). Royal Navy tested Infleqtion clock on submarine.',...P('kf1',-30,110)},
+{id:'allied_foundries',label:'Allied\nFoundries',category:'us_ecosystem',advantage:'us',size:12,kf:'kf1',desc:'GlobalFoundries $1.6B US investment. EU Chips Act funds Qu-Pilot lines.',...P('kf1',50,170)},
+{id:'nqi',label:'National Quantum\nInitiative',category:'us_ecosystem',advantage:'us',size:11,kf:'kf1',desc:'NQI Reauthorization: $2.7B through 2034. Defense Quantum Acceleration Act aligns DoD with AUKUS/NATO.',...P('kf1',-50,170)},
+{id:'defense_labs',label:'Defense Lab\nNetwork',category:'us_ecosystem',advantage:'us',size:11,kf:'kf1',desc:'DEVCOM C5ISR (DoD QIS Research Center). Army ARL operationalized RYDAR prototypes at NetModX23.',...P('kf1',40,230)},
+{id:'mcf',label:'Military-Civil\nFusion',category:'china_ecosystem',advantage:'china',size:15,kf:'kf3',desc:'6 interrelated efforts integrating civilian/military resources. Channels graduates directly into military roles.',...P('kf3',-20,-120)},
+{id:'fyp',label:'15th Five-Year\nPlan',category:'china_ecosystem',advantage:'china',size:13,kf:'kf3',desc:'2026-2030: Quantum tech designated top future industry. 1 trillion RMB ($138B) National Venture Guidance Fund.',...P('kf3',40,-60)},
+{id:'bri',label:'BRI Infrastructure\n(40+ ports)',category:'china_ecosystem',advantage:'china',size:16,kf:'kf3',desc:'40+ PRC-operated ports at strategic chokepoints. Djibouti, Gwadar, Hambantota, Piraeus, Chancay (Peru).',...P('kf3',-30,10)},
+{id:'state_scaling',label:'State-Directed\nScaling',category:'china_ecosystem',advantage:'china',size:13,kf:'kf3',desc:'Centralized production and direct military procurement. Structurally advantaged for prototype-to-fielding.',...P('kf3',40,60)},
+{id:'china_gov_invest',label:'Gov Investment\n($15.3B)',category:'china_ecosystem',advantage:'china',size:14,kf:'kf3',desc:'China allocated $15.3B to quantum R&D since 2023 vs US $3.8B government funding.',...P('kf3',-30,-60)},
+{id:'transparent_oceans',label:'Transparent\nOceans',category:'china_ecosystem',advantage:'china',size:12,kf:'kf3',desc:'PRC strategy for quantum magnetometer submarine tracking. AI-driven signal fusion into targeting tracks.',...P('kf3',30,130)},
+{id:'centralized_model',label:'Centralized\nInnovation',category:'china_ecosystem',advantage:'contested',size:12,kf:'kf3',desc:'Excels at scaling defined priorities. Constrains organic innovation. 23% international co-authorship vs ~50% US.',...P('kf3',-40,130)},
+{id:'css',label:'China Space\nStation',category:'china_ecosystem',advantage:'china',size:11,kf:'kf3',desc:'SQUIRE mission: global magnetic mapping. Cold-atom gyroscope at TRL 7. Space bypasses terrestrial vibration.',...P('kf3',50,190)},
+{id:'ruggedization',label:'Ruggedization',category:'barrier',advantage:'neutral',size:16,kf:'kf4',desc:'BARRIER 1: Vibration, thermal drift, EMI confine deployment to fixed sites and strategic platforms through 2035.',...P('kf4',-200,-25)},
+{id:'mfg_supply',label:'Manufacturing &\nSupply Chain',category:'barrier',advantage:'neutral',size:16,kf:'kf4',desc:'BARRIER 2: Si-28 enrichment, synthetic diamond, vacuum cells = limited capacity and single points of failure.',...P('kf4',-70,-25)},
+{id:'cjadc2',label:'CJADC2\nData Fusion',category:'barrier',advantage:'neutral',size:18,kf:'kf4',desc:'BARRIER 3 — MOST CONSEQUENTIAL: $1.4B over 6 years, no cross-service data sharing. Strands sensor programs at platform level.',...P('kf4',70,-25)},
+{id:'workforce',label:'Workforce\nPipeline',category:'barrier',advantage:'neutral',size:14,kf:'kf4',desc:'BARRIER 4: No DoW quantum sensing MOS. 6-18mo clearance delays. Programs train for computing, not sensing.',...P('kf4',200,-25)},
+{id:'swapc',label:'SWaP-C',category:'barrier',advantage:'neutral',size:13,kf:'kf4',desc:'Size, Weight, Power, Cost constraints prevent ground maneuver force employment through 2035.',...P('kf4',-260,45)},
+{id:'envnoise',label:'Environmental\nNoise',category:'barrier',advantage:'neutral',size:14,kf:'kf4',desc:'Temperature, vibration, EMI degrade quantum coherence. Universal barrier confirmed by both US and Chinese scientists.',...P('kf4',-130,55)},
+{id:'cmos_path',label:'CMOS\nManufacturing',category:'outcome',advantage:'us',size:14,kf:'kf4',desc:'ENABLING PATHWAY: NV diamond and SiC scale through existing semiconductor foundries.',...P('kf4',0,55)},
+{id:'strategic_platforms',label:'Strategic\nPlatforms',category:'deployment',advantage:'us',size:14,kf:'kf2',desc:'P-8A, B-21, MQ-4C, Virginia-class. Large stable platforms. Very likely to carry quantum sensors by 2035.',...P('kf2',-170,-80)},
+{id:'fixed_sites',label:'Fixed SIGINT\nSites',category:'deployment',advantage:'contested',size:12,kf:'kf2',desc:'RYDAR at fixed collection sites. Bypasses vibration/SWaP. Both US and PRC pursuing.',...P('kf2',-50,-90)},
+{id:'bri_dualuse',label:'BRI Dual-Use\nFacilities',category:'deployment',advantage:'china',size:14,kf:'kf3',desc:'Gravimeters at mining sites. Magnetometers at ports. Civilian attribution masks intel purpose. Outside US I&W.',...P('kf3',-10,60)},
+{id:'space_vehicles',label:'Space\nVehicles',category:'deployment',advantage:'contested',size:11,kf:'kf2',desc:'X-37B (US), CSS (China). Low-vibration environment. Both pursuing space-based quantum PNT.',...P('kf2',160,-70)},
+{id:'ground_force',label:'Ground Maneuver\nForce',category:'deployment',advantage:'bounded',size:10,kf:'kf4',desc:'UNLIKELY by 2035. SWaP-C + vibration + EMI preclude organic quantum sensors. Army depends on joint data.',...P('kf4',260,45)},
+{id:'gps_denied',label:'GPS-Denied\nNavigation',category:'outcome',advantage:'contested',size:15,kf:'kf4',desc:'Both pursuing. US leads in portable optical clocks. China leads in quantum inertial nav maturity.',...P('kf4',-100,105)},
+{id:'asw_detection',label:'Submarine\nDetection / ASW',category:'outcome',advantage:'china',size:14,kf:'kf3',desc:'PRC Transparent Oceans + drone magnetometers threaten US submarine survivability.',...P('kf3',0,240)},
+{id:'subterranean',label:'Subterranean\nCompromise',category:'outcome',advantage:'china',size:13,kf:'kf3',desc:'PRC gravimetry at BRI sites very likely to map underground voids, bunkers, tunnels beyond GPR depth.',...P('kf3',-50,190)},
+{id:'sigint',label:'SIGINT\nCollection',category:'outcome',advantage:'us',size:13,kf:'kf4',desc:'US RYDAR detects PRC LPI waveforms. Temporary advantage until PRC adapts emission signatures.',...P('kf4',100,105)},
+{id:'iw_gap',label:'Strategic Surprise\n& I&W Gap',category:'outcome',advantage:'china',size:16,kf:'kf3',desc:'Most consequential. PRC dual-use deployment outside Joint Force I&W. Warning in months, not years.',...P('kf3',30,250)},
+{id:'counter_qew',label:'Counter-Quantum\nEW',category:'outcome',advantage:'china',size:12,kf:'kf3',desc:'PRC roughly even chance (45-55%) by 2035. Targets laser coherence. US programs lack adversarial hardening.',...P('kf3',-50,250)}
+];
+
+const edges=[
+{source:'ruggedization',target:'mfg_supply',type:'compounds'},
+{source:'mfg_supply',target:'cjadc2',type:'compounds'},
+{source:'cjadc2',target:'workforce',type:'compounds'},
+{source:'envnoise',target:'ruggedization',type:'compounds'},
+{source:'swapc',target:'ruggedization',type:'compounds'},
+{source:'qpnt',target:'ruggedization',type:'depends'},
+{source:'qpnt',target:'cjadc2',type:'depends'},
+{source:'rydar',target:'cjadc2',type:'depends'},
+{source:'rydar',target:'workforce',type:'depends'},
+{source:'gravimetry',target:'ruggedization',type:'depends'},
+{source:'magnetometry',target:'envnoise',type:'depends'},
+{source:'magnetometry',target:'swapc',type:'depends'},
+{source:'qclocks',target:'ruggedization',type:'depends'},
+{source:'nvdiamond',target:'mfg_supply',type:'depends'},
+{source:'qinertial',target:'envnoise',type:'depends'},
+{source:'qradar',target:'swapc',type:'depends'},
+{source:'darpa_roqs',target:'ruggedization',type:'enables'},
+{source:'darpa_roqs',target:'envnoise',type:'enables'},
+{source:'aukus',target:'mfg_supply',type:'enables'},
+{source:'aukus',target:'qclocks',type:'enables'},
+{source:'allied_foundries',target:'mfg_supply',type:'enables'},
+{source:'private_capital',target:'startups',type:'enables'},
+{source:'startups',target:'nvdiamond',type:'enables'},
+{source:'nqi',target:'workforce',type:'enables'},
+{source:'defense_labs',target:'rydar',type:'enables'},
+{source:'academic',target:'workforce',type:'enables'},
+{source:'cmos_path',target:'mfg_supply',type:'enables'},
+{source:'cmos_path',target:'nvdiamond',type:'enables'},
+{source:'allied_foundries',target:'cmos_path',type:'enables'},
+{source:'mcf',target:'workforce',type:'enables'},
+{source:'mcf',target:'qinertial',type:'enables'},
+{source:'mcf',target:'magnetometry',type:'enables'},
+{source:'fyp',target:'state_scaling',type:'enables'},
+{source:'fyp',target:'china_gov_invest',type:'enables'},
+{source:'state_scaling',target:'mfg_supply',type:'enables'},
+{source:'bri',target:'bri_dualuse',type:'enables'},
+{source:'transparent_oceans',target:'magnetometry',type:'enables'},
+{source:'transparent_oceans',target:'asw_detection',type:'produces'},
+{source:'css',target:'qinertial',type:'enables'},
+{source:'centralized_model',target:'state_scaling',type:'enables'},
+{source:'china_gov_invest',target:'qinertial',type:'enables'},
+{source:'qpnt',target:'strategic_platforms',type:'deploys'},
+{source:'qclocks',target:'strategic_platforms',type:'deploys'},
+{source:'rydar',target:'fixed_sites',type:'deploys'},
+{source:'gravimetry',target:'bri_dualuse',type:'deploys'},
+{source:'magnetometry',target:'bri_dualuse',type:'deploys'},
+{source:'qinertial',target:'space_vehicles',type:'deploys'},
+{source:'strategic_platforms',target:'gps_denied',type:'produces'},
+{source:'bri_dualuse',target:'subterranean',type:'produces'},
+{source:'bri_dualuse',target:'iw_gap',type:'produces'},
+{source:'bri_dualuse',target:'asw_detection',type:'produces'},
+{source:'fixed_sites',target:'sigint',type:'produces'},
+{source:'cjadc2',target:'gps_denied',type:'compounds'},
+{source:'cjadc2',target:'sigint',type:'compounds'},
+{source:'workforce',target:'ground_force',type:'compounds'},
+{source:'counter_qew',target:'rydar',type:'compounds'},
+{source:'counter_qew',target:'qpnt',type:'compounds'},
+{source:'iw_gap',target:'counter_qew',type:'produces'},
+{source:'qinertial',target:'gps_denied',type:'produces'},
+{source:'magnetometry',target:'asw_detection',type:'produces'},
+{source:'gravimetry',target:'subterranean',type:'produces'},
+{source:'rydar',target:'sigint',type:'produces'}
+];
+
+const KF_M={
+kf1:['private_capital','startups','academic','darpa_roqs','aukus','allied_foundries','nqi','defense_labs'],
+kf2:['qpnt','rydar','gravimetry','qclocks','magnetometry','nvdiamond','qradar','qlidar','qinertial','strategic_platforms','fixed_sites','space_vehicles'],
+kf3:['mcf','fyp','bri','state_scaling','china_gov_invest','transparent_oceans','centralized_model','css','bri_dualuse','asw_detection','subterranean','iw_gap','counter_qew'],
+kf4:['ruggedization','mfg_supply','cjadc2','workforce','swapc','envnoise','cmos_path','ground_force','gps_denied','sigint']
+};
+
+const svg=d3.select('#graph').attr('viewBox',`0 0 ${W} ${H}`);
+const defs=svg.append('defs');
+const pat=defs.append('pattern').attr('id','grid').attr('width',40).attr('height',40).attr('patternUnits','userSpaceOnUse');
+pat.append('circle').attr('cx',20).attr('cy',20).attr('r',.4).attr('fill','rgba(60,80,120,.15)');
+svg.append('rect').attr('width',W).attr('height',H).attr('fill','url(#grid)');
+['depends','enables','compounds','deploys','produces'].forEach(t=>{
+defs.append('marker').attr('id',`arrow-${t}`).attr('viewBox','0 -3 6 6').attr('refX',20).attr('refY',0).attr('markerWidth',4).attr('markerHeight',4).attr('orient','auto').append('path').attr('d','M0,-3L6,0L0,3').attr('fill',EC[t]);
+});
+
+const sim=d3.forceSimulation(nodes)
+.force('link',d3.forceLink(edges).id(d=>d.id).distance(80).strength(.04))
+.force('collision',d3.forceCollide().radius(d=>d.size+16))
+.force('bounds',()=>{nodes.forEach(d=>{d.x=Math.max(60,Math.min(W-60,d.x));d.y=Math.max(80,Math.min(H-50,d.y))})})
+.alphaDecay(.05).velocityDecay(.65);
+sim.on('end',()=>{nodes.forEach(d=>{d.fx=d.x;d.fy=d.y})});
+
+const lG=svg.append('g');
+const lE=lG.selectAll('line').data(edges).enter().append('line').attr('class','link')
+.attr('stroke',d=>EC[d.type]).attr('stroke-width',d=>d.type==='compounds'?2.2:1.2)
+.attr('stroke-dasharray',d=>d.type==='compounds'?'5,3':null)
+.attr('marker-end',d=>`url(#arrow-${d.type})`);
+
+const nG=svg.append('g');
+const nE=nG.selectAll('g').data(nodes).enter().append('g').attr('class','node')
+.call(d3.drag().on('start',dS).on('drag',dD).on('end',dE));
+
+nE.append('circle').attr('class','node-circle').attr('r',d=>d.size)
+.attr('fill',d=>{const c=CC[d.category];return d3.color(c).copy({opacity:.12})})
+.attr('stroke',d=>AC[d.advantage]).attr('stroke-width',d=>d.advantage==='bounded'?1:2);
+
+nE.append('circle').attr('r',d=>Math.max(3,d.size*.25)).attr('fill',d=>CC[d.category]).attr('pointer-events','none');
+
+nE.each(function(d){const g=d3.select(this);d.label.split('\n').forEach((l,i)=>{g.append('text').attr('class','node-label').attr('dy',d.size+10+i*12).text(l)})});
+
+const tt=d3.select('#tooltip');
+
+nE.on('mouseover',function(ev,d){
+  // Show tooltip always
+  tt.style('display','block').html(`<div class="tt-title">${d.label.replace(/\n/g,' ')}</div><div class="tt-cat" style="color:${CC[d.category]}">${d.category.replace('_',' ')}</div>${d.desc.substring(0,140)}...`).style('left',(ev.clientX+14)+'px').style('top',(ev.clientY-10)+'px');
+  // Only highlight on hover if no node is click-locked
+  if(!focusedNode) hC(d);
+})
+.on('mousemove',function(ev){tt.style('left',(ev.clientX+14)+'px').style('top',(ev.clientY-10)+'px')})
+.on('mouseout',function(){
+  tt.style('display','none');
+  // Only reset on mouseout if no node is click-locked
+  if(!focusedNode) rH();
+})
+.on('click',function(ev,d){
+  ev.stopPropagation();
+  focusedNode=d;
+  sIP(d);
+  fN(d);
+});
+
+svg.on('click',()=>{focusedNode=null;cP();rH()});
+
+sim.on('tick',()=>{
+lE.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+nE.attr('transform',d=>`translate(${d.x},${d.y})`);
+});
+
+function gCN(d){const c=new Set([d.id]);edges.forEach(e=>{const s=typeof e.source==='object'?e.source.id:e.source,t=typeof e.target==='object'?e.target.id:e.target;if(s===d.id)c.add(t);if(t===d.id)c.add(s)});return c}
+function hC(d){const c=gCN(d);nE.classed('dimmed',n=>!c.has(n.id));nE.selectAll('.node-label').classed('highlighted',n=>n.id===d.id);lE.classed('dimmed',e=>{const s=typeof e.source==='object'?e.source.id:e.source,t=typeof e.target==='object'?e.target.id:e.target;return!c.has(s)||!c.has(t)});lE.classed('highlighted',e=>{const s=typeof e.source==='object'?e.source.id:e.source,t=typeof e.target==='object'?e.target.id:e.target;return s===d.id||t===d.id})}
+function rH(){nE.classed('dimmed',false);nE.selectAll('.node-label').classed('highlighted',false);lE.classed('dimmed',false).classed('highlighted',false)}
+function fN(d){const c=gCN(d);nE.classed('dimmed',n=>!c.has(n.id));lE.classed('dimmed',e=>{const s=typeof e.source==='object'?e.source.id:e.source,t=typeof e.target==='object'?e.target.id:e.target;return!c.has(s)||!c.has(t)});lE.classed('highlighted',e=>{const s=typeof e.source==='object'?e.source.id:e.source,t=typeof e.target==='object'?e.target.id:e.target;return s===d.id||t===d.id})}
+function sIP(d){const p=document.getElementById('info-panel'),c=gCN(d),cn=nodes.filter(n=>c.has(n.id)&&n.id!==d.id).map(n=>n.label.replace(/\n/g,' '));p.querySelector('.panel-title').textContent=d.label.replace(/\n/g,' ');p.querySelector('.panel-category').textContent=d.category.replace('_',' ');p.querySelector('.panel-category').style.color=CC[d.category];p.querySelector('.panel-desc').textContent=d.desc;p.querySelector('.panel-connections').innerHTML=`<strong>Connected to:</strong> <span>${cn.join(' · ')}</span>`;p.classList.add('visible')}
+function cP(){document.getElementById('info-panel').classList.remove('visible')}
+function sA(el){document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active')}
+function resetView(el){focusedNode=null;rH();cP();sA(document.querySelector('.ctrl-btn'))}
+
+function filterCategory(cat,el){focusedNode=null;sA(el);if(cat==='all'){rH();return}const s=new Set();nodes.filter(n=>n.category===cat).forEach(n=>s.add(n.id));edges.forEach(e=>{const si=typeof e.source==='object'?e.source.id:e.source,ti=typeof e.target==='object'?e.target.id:e.target;if(s.has(si))s.add(ti);if(s.has(ti))s.add(si)});nE.classed('dimmed',n=>!s.has(n.id));lE.classed('dimmed',e=>{const si=typeof e.source==='object'?e.source.id:e.source,ti=typeof e.target==='object'?e.target.id:e.target;return!s.has(si)||!s.has(ti)});lE.classed('highlighted',e=>{const si=typeof e.source==='object'?e.source.id:e.source,ti=typeof e.target==='object'?e.target.id:e.target;return s.has(si)&&s.has(ti)})}
+
+function highlightKF(kf,el){focusedNode=null;sA(el);const m=new Set(KF_M[kf]);edges.forEach(e=>{const s=typeof e.source==='object'?e.source.id:e.source,t=typeof e.target==='object'?e.target.id:e.target;if(m.has(s))m.add(t);if(m.has(t))m.add(s)});nE.classed('dimmed',n=>!m.has(n.id));lE.classed('dimmed',e=>{const s=typeof e.source==='object'?e.source.id:e.source,t=typeof e.target==='object'?e.target.id:e.target;return!m.has(s)||!m.has(t)});lE.classed('highlighted',e=>{const s=typeof e.source==='object'?e.source.id:e.source,t=typeof e.target==='object'?e.target.id:e.target;return m.has(s)&&m.has(t)})}
+
+function dS(ev,d){if(!ev.active)sim.alphaTarget(.05).restart();d.fx=d.x;d.fy=d.y}
+function dD(ev,d){d.fx=ev.x;d.fy=ev.y}
+function dE(ev,d){if(!ev.active)sim.alphaTarget(0);d.fx=ev.x;d.fy=ev.y}
+
+function exportPNG(){
+const el=document.getElementById('graph'),cl=el.cloneNode(true);
+const all=cl.querySelectorAll('*'),orig=el.querySelectorAll('*');
+all.forEach((e,i)=>{if(i<orig.length){const cs=window.getComputedStyle(orig[i]);['fill','stroke','stroke-width','stroke-opacity','stroke-dasharray','font-family','font-size','font-weight','opacity','text-anchor','dominant-baseline'].forEach(p=>{e.style[p]=cs.getPropertyValue(p)})}});
+const sd=new XMLSerializer().serializeToString(cl),cv=document.createElement('canvas'),sc=2;
+cv.width=W*sc;cv.height=H*sc;const ctx=cv.getContext('2d');ctx.scale(sc,sc);
+ctx.fillStyle='#0a0e1a';ctx.fillRect(0,0,W,H);
+const img=new Image(),bl=new Blob([sd],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(bl);
+img.onload=()=>{ctx.drawImage(img,0,0,W,H);ctx.fillStyle='#e8ecf4';ctx.font='bold 24px Georgia,serif';ctx.fillText('Quantum Sensing Ecosystem — US\u2013PRC Competition Through 2035',40,40);ctx.fillStyle='#7a8599';ctx.font='13px sans-serif';ctx.fillText('Team Quantum Advantage \u00b7 USAWC AY26',40,62);cv.toBlob(b=>{const a=document.createElement('a');a.download='quantum_ecosystem_network.png';a.href=URL.createObjectURL(b);a.click();URL.revokeObjectURL(url)},'image/png')};
+img.src=url}
+</script>
+</body>
+</html>
