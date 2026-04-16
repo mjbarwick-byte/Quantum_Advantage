@@ -261,7 +261,331 @@ nav {
   break-inside: avoid; column-span: all;
 }
 
-/* ── TECH READINESS TABLE ──────────────────── */
+/* ── FIGURE / IMAGE SYSTEM ─────────────────────────────────
+ *
+ *  USAGE CHEAT SHEET:
+ *
+ *  1. FULL WIDTH (fills the narrative column, ~960px):
+ *     <figure class="fig fig--full">
+ *       <img src="..." alt="..."/>
+ *       <figcaption>Caption text here</figcaption>
+ *     </figure>
+ *
+ *  2. WIDE (bleeds beyond narrative column into margins):
+ *     <figure class="fig fig--wide">...</figure>
+ *
+ *  3. FULL VIEWPORT BLEED (edge-to-edge, cinematic):
+ *     <figure class="fig fig--bleed">...</figure>
+ *
+ *  4. SIDE BY SIDE — image right, text left (50/50):
+ *     <div class="fig fig--side">
+ *       <div class="fig--side-text">
+ *         <h3>Subheading</h3>
+ *         <p>Body text here...</p>
+ *       </div>
+ *       <figure class="fig--side-img">
+ *         <img src="..." alt="..."/>
+ *         <figcaption>Caption</figcaption>
+ *       </figure>
+ *     </div>
+ *
+ *  5. SIDE BY SIDE — image left, text right:
+ *     Same as above but swap the two children order.
+ *
+ *  6. FLOAT RIGHT (text wraps around image):
+ *     <figure class="fig fig--float-right">...</figure>
+ *
+ *  NOTE: Place ALL figures OUTSIDE .narrative-body (before or
+ *  after it) because .narrative-body uses columns:2. Images
+ *  inside a columns layout get crushed to one column width.
+ *  Only .pull-quote uses column-span:all to escape — figures
+ *  should simply live outside .narrative-body entirely.
+ * ─────────────────────────────────────────────────────────── */
+
+.fig {
+  margin: 40px 0;
+  break-inside: avoid;
+  column-span: all;          /* Safety: escapes column flow if accidentally placed inside */
+}
+
+.fig img,
+.fig--side-img img {
+  width: 100%;
+  display: block;
+  border-radius: 3px;
+  border: 1px solid rgba(14,58,92,0.5);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+
+figcaption,
+.fig figcaption,
+.fig--side-img figcaption {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0.07em;
+  line-height: 1.6;
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid var(--border);
+}
+
+/* 1. Full width of narrative container (~960px) */
+.fig--full {
+  width: 100%;
+}
+
+/* 2. Wide — breaks into the side margins for emphasis */
+.fig--wide {
+  width: calc(100% + 120px);
+  margin-left: -60px;
+  margin-right: -60px;
+}
+
+/* 3. Full viewport bleed — cinematic edge-to-edge */
+.fig--bleed {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  width: 100vw;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+.fig--bleed img {
+  height: 55vh;
+  min-height: 300px;
+  object-fit: cover;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+
+/* 4 & 5. Side by side — image + text (responsive: stacks on mobile) */
+.fig--side {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+  margin: 48px 0;
+  column-span: all;
+  break-inside: avoid;
+}
+.fig--side-wide {
+  grid-template-columns: 3fr 2fr;  /* Text gets more room */
+}
+.fig--side-narrow {
+  grid-template-columns: 2fr 3fr;  /* Image gets more room */
+}
+.fig--side-text {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.fig--side-text h3 {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+.fig--side-text p {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.8;
+}
+.fig--side-img {
+  position: relative;
+}
+
+/* 6. Float right — text wraps around image */
+.fig--float-right {
+  float: right;
+  width: 42%;
+  margin: 4px 0 24px 40px;
+  column-span: none;
+}
+.fig--float-left {
+  float: left;
+  width: 42%;
+  margin: 4px 40px 24px 0;
+  column-span: none;
+}
+.fig-clearfix::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+/* Responsive: stack side-by-side at mobile */
+@media (max-width: 768px) {
+  .fig--wide { width: 100%; margin-left: 0; margin-right: 0; }
+  .fig--side,
+  .fig--side-wide,
+  .fig--side-narrow { grid-template-columns: 1fr; gap: 24px; }
+  .fig--float-right,
+  .fig--float-left { float: none; width: 100%; margin: 0 0 24px 0; }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   TRL ANIMATED CHART
+   ══════════════════════════════════════════════════════ */
+.trl-chart {
+  width: 100%;
+  margin: 0 0 8px;
+  position: relative;
+}
+.trl-header {
+  display: grid;
+  grid-template-columns: 220px 1fr 180px;
+  gap: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0,212,255,0.25);
+  margin-bottom: 2px;
+}
+.trl-col-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(0,212,255,0.75);
+  padding: 0 16px;
+  line-height: 1.4;
+}
+.trl-col-label:first-child { padding-left: 0; }
+.trl-col-label:last-child  { text-align: right; padding-right: 0; }
+.trl-row {
+  display: grid;
+  grid-template-columns: 220px 1fr 180px;
+  gap: 0;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(14,58,92,0.4);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.trl-row.animate-in { opacity: 1; transform: translateY(0); }
+.trl-tech {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #d0e8f4;
+  line-height: 1.35;
+  padding-right: 12px;
+}
+.trl-tech-icon { flex-shrink: 0; margin-top: 1px; font-size: 13px; }
+.trl-bars-cell {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.trl-actor-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.trl-actor-tag {
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  width: 20px;
+  flex-shrink: 0;
+  text-align: right;
+}
+.trl-actor-tag.us  { color: #00d4ff; }
+.trl-actor-tag.cn  { color: #ff5555; }
+.trl-actor-tag.dim { color: rgba(255,255,255,0.3); }
+.trl-val {
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 700;
+  width: 14px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.trl-val.us  { color: #00d4ff; }
+.trl-val.cn  { color: #ff5555; }
+.trl-val.dim { color: rgba(255,255,255,0.28); }
+.trl-track {
+  flex: 1;
+  height: 9px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.trl-fill {
+  height: 100%;
+  border-radius: 4px;
+  width: 0%;
+  transition: width 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+.trl-fill.us { background: linear-gradient(90deg,#008fb5,#00d4ff); box-shadow: 0 0 10px rgba(0,212,255,0.45); }
+.trl-fill.cn { background: linear-gradient(90deg,#aa1a1a,#ff5555); box-shadow: 0 0 10px rgba(255,68,68,0.4); }
+.trl-fill.us.muted { background: linear-gradient(90deg,#005a75,#007a99); box-shadow: none; opacity: 0.5; }
+.trl-fill.cn.muted { background: linear-gradient(90deg,#6a1010,#aa3333); box-shadow: none; opacity: 0.5; }
+.trl-fill::after {
+  content: ''; position: absolute; top: 0; right: -40px;
+  width: 40px; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+}
+.trl-row.animate-in .trl-fill::after {
+  animation: trl-glint 1.3s ease 0.9s forwards;
+  opacity: 0;
+}
+@keyframes trl-glint {
+  0%  { opacity: 0; right: 100%; }
+  15% { opacity: 1; }
+  100%{ opacity: 0; right: -40px; }
+}
+.trl-assess {
+  display: flex;
+  justify-content: flex-end;
+  padding-left: 8px;
+}
+.trl-pill {
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 11px;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1.5;
+  opacity: 0;
+  transform: scale(0.88);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.trl-row.animate-in .trl-pill { opacity: 1; transform: scale(1); }
+.trl-pill.vlikely { background: rgba(0,255,150,0.07);  border: 1px solid rgba(0,255,150,0.5); color: #00ff96; }
+.trl-pill.likely  { background: rgba(0,212,255,0.07);  border: 1px solid rgba(0,212,255,0.5); color: #00d4ff; }
+.trl-pill.unlikely{ background: rgba(255,68,68,0.07);  border: 1px solid rgba(255,68,68,0.4); color: #ff6060; }
+.trl-footnote {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: rgba(255,255,255,0.22);
+  letter-spacing: 0.05em;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(14,58,92,0.35);
+  line-height: 1.7;
+}
+@media (max-width: 640px) {
+  .trl-header { grid-template-columns: 1fr 160px; }
+  .trl-header .trl-col-label:first-child { display: none; }
+  .trl-row { grid-template-columns: 1fr; gap: 8px; padding: 14px 0; }
+  .trl-assess { justify-content: flex-start; padding-left: 0; }
+}
+
+/* ── TECH READINESS TABLE (legacy styles) ──────────── */
 .tech-table { width: 100%; border-collapse: collapse; margin: 48px 0; }
 .tech-table th {
   font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em;
@@ -511,79 +835,85 @@ footer a:hover { color: var(--cyan); }
     <h2 class="narrative-headline">Q-PNT, RYDAR, and Gravimetry Likely Fielded by 2035 — Four Remain Bounded by Physics</h2>
   </div>
 
-  <!-- Technology Readiness Table -->
-  <div class="reveal" style="margin-bottom:40px;">
-    <table class="tech-table">
-      <thead>
-        <tr>
-          <th>Technology</th>
-          <th>US TRL</th>
-          <th>&nbsp;</th>
-          <th>CN TRL</th>
-          <th>&nbsp;</th>
-          <th>Fielding Assessment</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="tech-name">✅ Quantum PNT</td>
-          <td class="trl-num" style="color:#00d4ff;">7</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-us" style="width:87.5%"></div></div></td>
-          <td class="trl-num" style="color:#ef5350;">7</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-cn" style="width:87.5%"></div></div></td>
-          <td><span class="wep-pill wep-likely" style="font-size:8px;">Likely</span></td>
-        </tr>
-        <tr>
-          <td class="tech-name">✅ RYDAR (Rydberg RF)</td>
-          <td class="trl-num" style="color:#00d4ff;">6</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-us" style="width:75%"></div></div></td>
-          <td class="trl-num" style="color:#ef5350;">3</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-cn" style="width:37.5%"></div></div></td>
-          <td><span class="wep-pill wep-vlikely" style="font-size:8px;">Very Likely (US)</span></td>
-        </tr>
-        <tr>
-          <td class="tech-name">✅ Quantum Gravimetry</td>
-          <td class="trl-num" style="color:#00d4ff;">6</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-us" style="width:75%"></div></div></td>
-          <td class="trl-num" style="color:#ef5350;">5</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-cn" style="width:62.5%"></div></div></td>
-          <td><span class="wep-pill wep-vlikely" style="font-size:8px;">Very Likely</span></td>
-        </tr>
-        <tr style="opacity:0.6;">
-          <td class="tech-name">❌ SQUIDs</td>
-          <td class="trl-num" style="color:#8ab4cc;">5</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-us" style="width:62.5%"></div></div></td>
-          <td class="trl-num" style="color:#aa7777;">4</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-cn" style="width:50%"></div></div></td>
-          <td><span class="wep-pill wep-unlikely" style="font-size:8px;">Unlikely (tactical)</span></td>
-        </tr>
-        <tr style="opacity:0.6;">
-          <td class="tech-name">❌ Quantum Radar</td>
-          <td class="trl-num" style="color:#8ab4cc;">3</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-us" style="width:37.5%"></div></div></td>
-          <td class="trl-num" style="color:#aa7777;">3</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-cn" style="width:37.5%"></div></div></td>
-          <td><span class="wep-pill wep-unlikely" style="font-size:8px;">Unlikely — physics-bound</span></td>
-        </tr>
-        <tr style="opacity:0.6;">
-          <td class="tech-name">❌ Quantum LiDAR</td>
-          <td class="trl-num" style="color:#8ab4cc;">3</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-us" style="width:37.5%"></div></div></td>
-          <td class="trl-num" style="color:#aa7777;">2</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-cn" style="width:25%"></div></div></td>
-          <td><span class="wep-pill wep-unlikely" style="font-size:8px;">Unlikely</span></td>
-        </tr>
-        <tr style="opacity:0.6;">
-          <td class="tech-name">❌ Airborne ASW Magnetometry</td>
-          <td class="trl-num" style="color:#8ab4cc;">4</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-us" style="width:50%"></div></div></td>
-          <td class="trl-num" style="color:#aa7777;">3</td>
-          <td><div class="bar-wrap"><div class="bar-fill bar-cn" style="width:37.5%"></div></div></td>
-          <td><span class="wep-pill wep-unlikely" style="font-size:8px;">Unlikely (20–45%)</span></td>
-        </tr>
-      </tbody>
-    </table>
-    <div style="font-size:11px;color:var(--dim);font-family:var(--mono);margin-top:8px;">TRL scale: 1 (basic research) → 9 (operational). Source: Team Quantum Advantage IAR, AY26.</div>
+  <!-- TRL Animated Chart -->
+  <div class="trl-chart reveal" id="trl-chart">
+
+    <div class="trl-header">
+      <div class="trl-col-label">Technology</div>
+      <div class="trl-col-label">US &amp; CN Technology Readiness (TRL 1–9)</div>
+      <div class="trl-col-label">Fielding<br>Assessment</div>
+    </div>
+
+    <div class="trl-row" data-delay="0"   data-us="7" data-cn="7">
+      <div class="trl-tech"><span class="trl-tech-icon">✅</span>Quantum PNT</div>
+      <div class="trl-bars-cell">
+        <div class="trl-actor-row"><span class="trl-actor-tag us">US</span><span class="trl-val us">0</span><div class="trl-track"><div class="trl-fill us" data-pct="77"></div></div></div>
+        <div class="trl-actor-row"><span class="trl-actor-tag cn">CN</span><span class="trl-val cn">0</span><div class="trl-track"><div class="trl-fill cn" data-pct="77"></div></div></div>
+      </div>
+      <div class="trl-assess"><span class="trl-pill likely" style="transition-delay:0.65s">Likely<br>55–80%</span></div>
+    </div>
+
+    <div class="trl-row" data-delay="90"  data-us="6" data-cn="3">
+      <div class="trl-tech"><span class="trl-tech-icon">✅</span>RYDAR (Rydberg RF)</div>
+      <div class="trl-bars-cell">
+        <div class="trl-actor-row"><span class="trl-actor-tag us">US</span><span class="trl-val us">0</span><div class="trl-track"><div class="trl-fill us" data-pct="66"></div></div></div>
+        <div class="trl-actor-row"><span class="trl-actor-tag cn">CN</span><span class="trl-val cn">0</span><div class="trl-track"><div class="trl-fill cn" data-pct="33"></div></div></div>
+      </div>
+      <div class="trl-assess"><span class="trl-pill vlikely" style="transition-delay:0.65s">Very Likely<br>(US) 80–95%</span></div>
+    </div>
+
+    <div class="trl-row" data-delay="180" data-us="6" data-cn="5">
+      <div class="trl-tech"><span class="trl-tech-icon">✅</span>Quantum Gravimetry</div>
+      <div class="trl-bars-cell">
+        <div class="trl-actor-row"><span class="trl-actor-tag us">US</span><span class="trl-val us">0</span><div class="trl-track"><div class="trl-fill us" data-pct="66"></div></div></div>
+        <div class="trl-actor-row"><span class="trl-actor-tag cn">CN</span><span class="trl-val cn">0</span><div class="trl-track"><div class="trl-fill cn" data-pct="55"></div></div></div>
+      </div>
+      <div class="trl-assess"><span class="trl-pill vlikely" style="transition-delay:0.65s">Very Likely<br>80–95%</span></div>
+    </div>
+
+    <div class="trl-row" data-delay="270" data-us="5" data-cn="4">
+      <div class="trl-tech"><span class="trl-tech-icon">❌</span>SQUIDs</div>
+      <div class="trl-bars-cell">
+        <div class="trl-actor-row"><span class="trl-actor-tag dim">US</span><span class="trl-val dim">0</span><div class="trl-track"><div class="trl-fill us muted" data-pct="55"></div></div></div>
+        <div class="trl-actor-row"><span class="trl-actor-tag dim">CN</span><span class="trl-val dim">0</span><div class="trl-track"><div class="trl-fill cn muted" data-pct="44"></div></div></div>
+      </div>
+      <div class="trl-assess"><span class="trl-pill unlikely" style="transition-delay:0.65s">Unlikely<br>(Tactical)</span></div>
+    </div>
+
+    <div class="trl-row" data-delay="360" data-us="3" data-cn="3">
+      <div class="trl-tech"><span class="trl-tech-icon">❌</span>Quantum Radar</div>
+      <div class="trl-bars-cell">
+        <div class="trl-actor-row"><span class="trl-actor-tag dim">US</span><span class="trl-val dim">0</span><div class="trl-track"><div class="trl-fill us muted" data-pct="33"></div></div></div>
+        <div class="trl-actor-row"><span class="trl-actor-tag dim">CN</span><span class="trl-val dim">0</span><div class="trl-track"><div class="trl-fill cn muted" data-pct="33"></div></div></div>
+      </div>
+      <div class="trl-assess"><span class="trl-pill unlikely" style="transition-delay:0.65s">Unlikely —<br>Physics-Bound</span></div>
+    </div>
+
+    <div class="trl-row" data-delay="450" data-us="3" data-cn="2">
+      <div class="trl-tech"><span class="trl-tech-icon">❌</span>Quantum LiDAR</div>
+      <div class="trl-bars-cell">
+        <div class="trl-actor-row"><span class="trl-actor-tag dim">US</span><span class="trl-val dim">0</span><div class="trl-track"><div class="trl-fill us muted" data-pct="33"></div></div></div>
+        <div class="trl-actor-row"><span class="trl-actor-tag dim">CN</span><span class="trl-val dim">0</span><div class="trl-track"><div class="trl-fill cn muted" data-pct="22"></div></div></div>
+      </div>
+      <div class="trl-assess"><span class="trl-pill unlikely" style="transition-delay:0.65s">Unlikely<br>20–45%</span></div>
+    </div>
+
+    <div class="trl-row" data-delay="540" data-us="4" data-cn="3">
+      <div class="trl-tech"><span class="trl-tech-icon">❌</span>Airborne ASW<br>Magnetometry</div>
+      <div class="trl-bars-cell">
+        <div class="trl-actor-row"><span class="trl-actor-tag dim">US</span><span class="trl-val dim">0</span><div class="trl-track"><div class="trl-fill us muted" data-pct="44"></div></div></div>
+        <div class="trl-actor-row"><span class="trl-actor-tag dim">CN</span><span class="trl-val dim">0</span><div class="trl-track"><div class="trl-fill cn muted" data-pct="33"></div></div></div>
+      </div>
+      <div class="trl-assess"><span class="trl-pill unlikely" style="transition-delay:0.65s">Unlikely<br>20–45%</span></div>
+    </div>
+
+    <div class="trl-footnote">
+      TRL scale: 1 (basic research) → 9 (operational) &nbsp;·&nbsp;
+      ✅ Likely fielded by 2035 &nbsp;·&nbsp;
+      ❌ Physics or integration barriers prevent fielding by 2035<br>
+      Source: Team Quantum Advantage IAR, AY26 &nbsp;·&nbsp; WEP per ICD-203
+    </div>
+
   </div>
 </div>
 
@@ -758,6 +1088,43 @@ window.addEventListener('scroll', () => {
     }
   });
 }, { passive: true });
+</script>
+
+<script>
+/* TRL Chart — Scroll-triggered animation */
+(function () {
+  function animateCount(el, target, startDelay) {
+    setTimeout(() => {
+      const dur = 950, t0 = performance.now();
+      (function tick(now) {
+        const p = Math.min((now - t0) / dur, 1);
+        el.textContent = Math.round((1 - Math.pow(1 - p, 3)) * target);
+        if (p < 1) requestAnimationFrame(tick);
+        else el.textContent = target;
+      })(performance.now());
+    }, startDelay);
+  }
+  function animateRow(row) {
+    const base = parseInt(row.dataset.delay) || 0;
+    setTimeout(() => row.classList.add('animate-in'), base);
+    const vals = row.querySelectorAll('.trl-val');
+    animateCount(vals[0], parseInt(row.dataset.us), base + 100);
+    animateCount(vals[1], parseInt(row.dataset.cn), base + 140);
+    setTimeout(() => {
+      row.querySelectorAll('.trl-fill').forEach(f => { f.style.width = f.dataset.pct + '%'; });
+    }, base + 70);
+  }
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !e.target.dataset.fired) {
+        e.target.dataset.fired = '1';
+        animateRow(e.target);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.25, rootMargin: '0px 0px -30px 0px' });
+  document.querySelectorAll('.trl-row').forEach(r => io.observe(r));
+})();
 </script>
 </body>
 </html>
