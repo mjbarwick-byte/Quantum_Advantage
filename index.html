@@ -1104,6 +1104,20 @@ window.addEventListener('scroll', () => {
       })(performance.now());
     }, startDelay);
   }
+  function resetRow(row) {
+    row.classList.remove('animate-in');
+    row.querySelectorAll('.trl-val').forEach(v => { v.textContent = '0'; });
+    row.querySelectorAll('.trl-fill').forEach(f => {
+      // Kill transition so the reset is instant (no reverse animation)
+      f.style.transition = 'none';
+      f.style.width = '0%';
+      // Re-enable transition on next frame so the next play-through animates
+      requestAnimationFrame(() => {
+        f.style.transition = '';
+      });
+    });
+  }
+
   function animateRow(row) {
     const base = parseInt(row.dataset.delay) || 0;
     setTimeout(() => row.classList.add('animate-in'), base);
@@ -1114,12 +1128,14 @@ window.addEventListener('scroll', () => {
       row.querySelectorAll('.trl-fill').forEach(f => { f.style.width = f.dataset.pct + '%'; });
     }, base + 70);
   }
+
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => {
-      if (e.isIntersecting && !e.target.dataset.fired) {
-        e.target.dataset.fired = '1';
+      if (e.isIntersecting) {
         animateRow(e.target);
-        io.unobserve(e.target);
+      } else {
+        // Row has scrolled fully out — reset it so it re-animates next time
+        resetRow(e.target);
       }
     });
   }, { threshold: 0.25, rootMargin: '0px 0px -30px 0px' });
